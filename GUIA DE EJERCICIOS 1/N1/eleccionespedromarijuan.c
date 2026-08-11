@@ -50,6 +50,7 @@ int main()
                 printf("Voto nulo registrado.\n");
                 break;
         }
+        //jm
         
     return 0;
 }
