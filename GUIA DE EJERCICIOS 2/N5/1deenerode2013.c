@@ -12,6 +12,7 @@ El programa debe aceptar una fecha por teclado en el dia y mes correspondiente a
 el programa debe decir desde ese dia cuantos dias han pasado desde el primero de enero 
 de 2013 (1 de enero de 2013)
 
+
 */
 
 void limpiarBuffer() 
