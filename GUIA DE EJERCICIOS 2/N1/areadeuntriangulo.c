@@ -54,5 +54,5 @@ int main()
     system("cls");
     printf("El área del triángulo es: %.2Lf\n", area);
 
-    sleep(10);
+    sleep(5);
 }
