@@ -15,10 +15,13 @@ desea realizar como pedir su saldo y este ser impreso en la pantalla, todo debe 
 No puedes retirar mas de lo que tienes
 No puedes depositar mas de lo que tienes
 
+
+ESTE PROGRAMA SI TIENE UNA CLAVE GUARDADA EN UNA VARIABLE, CONSTA DE 3 INTENTOS PARA PONER LA CLAVE 1234 BIEN
+AL TERCERO QUE FALLES SE CIERRA EL PROGRAMA
+
 */
 
 void menu() {
-    system ("cls");
     printf("\n--- BIENVENIDO AL BFC ---\n");
     printf("1. Consulta de saldo\n");
     printf("2. Deposito\n");
@@ -37,38 +40,71 @@ int validacionmenu(int op1) {
 
 int main() {
 
-    // CUANDO EL PROGRAMA NO POSEE CLAVE
-    // Se inicializa con saldo inicial (por ejemplo, 500) para poder retirar
     int saldo = 500, deposito = 0, retiro = 0, op1 = 0;
     int clave = 0;
+    
+    // CONTROL DE INTENTOS Y CLAVE GUARDADA
+    int claveCorrecta = 1234;     // La clave que otorga el acceso
+    int intentos = 0;             // Contador de fallos actual
+    int maxIntentos = 3;          // Limite maximo permitido
 
-    // 1. VALIDACIÓN DE LA CLAVE (Máximo 4 dígitos: de 0 a 9999)
+    // 1. VALIDACIÓN DE LA CLAVE CON LÍMITE DE 3 INTENTOS
     do 
     {
-        system ("cls");
+        system("cls");
+        printf("--- CONTROL DE ACCESO BFC ---\n");
+        printf("Intentos fallidos: %d/%d\n\n", intentos, maxIntentos);
         printf("Ingrese su clave secreta (maximo 4 digitos): ");
+        
         if (scanf("%d", &clave) != 1) 
         {
             printf("Error: La clave debe ser numerica.\n");
             limpiarBuffer();
-            clave = -1; // Fuerza la repetición
+            intentos++; // Suma un fallo por ingresar letras
             sleep(3);
         } 
         else 
         {
             limpiarBuffer();
+            
+            // Validación de longitud (0 a 9999)
             if (clave < 0 || clave > 9999) 
             {
-                printf("Error: La clave no puede exceder los 4 digitos ni ser negativa.\n");
+                printf("Error: La clave debe ser de maximo 4 digitos positivos.\n");
+                intentos++; // Suma un fallo por longitud invalida
+                sleep(3);
+            }
+            // Comprobación de veracidad
+            else if (clave == claveCorrecta)
+            {
+                break; // Clave perfecta: rompe el bucle de intentos para ir al menú
+            }
+            else 
+            {
+                printf("Error: Clave incorrecta.\n");
+                intentos++; // Suma un fallo por clave erronea
                 sleep(3);
             }
         }
-    } while (clave < 0 || clave > 9999);
 
-    printf("\nClave aceptada con exito.\n");
+        // Si llega al límite, bloquea y aborta el programa
+        if (intentos >= maxIntentos)
+        {
+            system("cls");
+            printf("\n[ALERTA CRITICA] Ha superado los 3 intentos permitidos.\n");
+            printf("El sistema se ha bloqueado por seguridad.\n");
+            sleep(5);
+            return 0; // Termina el programa inmediatamente
+        }
+
+    } while (intentos < maxIntentos);
+
+    // Mensaje de éxito al romper el bucle correctamente
+    system("cls");
+    printf("\nClave aceptada con exito. Acceso concedido.\n");
     sleep(3);
 
-    // 2. BUCLE PRINCIPAL DEL CAJERO
+    // 2. BUCLE PRINCIPAL DEL CAJERO (Solo se ejecuta si no se bloqueó arriba)
     do 
     {
         do 
@@ -85,13 +121,12 @@ int main() {
             } 
             else if (op1 < 1 || op1 > 4 )
             {
-                printf("Error: Solo se permiten numeros del 1 al 4");
+                printf("Error: Solo se permiten numeros del 1 al 4\n");
                 sleep(3);
             }
             else 
             {
-                limpiarBuffer();
-
+                clearerr(stdin); // Asegura el estado limpio del flujo de entrada
             }
             
         } while (!validacionmenu(op1));
@@ -100,7 +135,7 @@ int main() {
         switch (op1) 
         {
             case 1: // Consulta
-                system ("cls");
+                system("cls");
                 printf("\nSu saldo actual es de: %d $\n", saldo);
                 sleep(3);
                 break;
@@ -108,7 +143,7 @@ int main() {
             case 2: // Depósito
                 do 
                 {
-                    system ("cls");
+                    system("cls");
                     printf("\nIngrese el monto a depositar: ");
                     if (scanf("%d", &deposito) != 1) 
                     {
@@ -136,7 +171,7 @@ int main() {
             case 3: // Retiro
                 do 
                 {
-                    system ("cls");
+                    system("cls");
                     printf("\nIngrese el monto a retirar: ");
                     if (scanf("%d", &retiro) != 1) 
                     {
@@ -148,7 +183,6 @@ int main() {
                     else 
                     {
                         limpiarBuffer();
-                        // Validación obligatoria: No puedes retirar más de lo que tienes
                         if (retiro > saldo) 
                         {
                             printf("Error: Fondos insuficientes. Su saldo es de %d $\n", saldo);
@@ -168,12 +202,12 @@ int main() {
                 break;
 
             case 4: // Salir
-                system ("cls");
+                system("cls");
                 printf("\nGracias por usar los servicios de BFC. ¡Hasta luego!\n");
                 sleep(5);
         }
 
-    } while (op1 != 4); // El programa se repite hasta que elija la opción 4
+    } while (op1 != 4);
 
     return 0;
 }
