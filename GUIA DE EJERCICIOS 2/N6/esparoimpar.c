@@ -8,6 +8,7 @@
 
 /*
 
+leer un valor n cualquiera y decir si es par o impar
 
 */
 

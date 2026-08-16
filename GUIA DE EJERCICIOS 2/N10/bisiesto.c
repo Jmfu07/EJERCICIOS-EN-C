@@ -8,6 +8,8 @@
 
 /*
 
+Dado el numero del mes y el año (considerando si es bisiesto) saque
+por pantalla el numero de dias del mes
 
 */
 
