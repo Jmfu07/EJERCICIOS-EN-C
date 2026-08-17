@@ -17,3 +17,37 @@ void limpiarBuffer()
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
+
+int main ()
+{
+    int n;
+    long double resultado;
+    do 
+    {
+        system("cls");
+        printf("Ingrese un numero: ");
+        if (scanf("%d", &n) != 1) 
+        {
+            printf("Error: Dato invalido.\n");
+            limpiarBuffer();
+            sleep(3);
+            continue;
+        }
+        limpiarBuffer();
+        break;  
+
+    } while (1);
+
+    resultado = n%2;
+
+    if (resultado == 0)
+    {
+        printf ("Es par");
+    }
+    else
+    {
+        printf ("Es impar");
+    }
+
+    sleep(10);
+}

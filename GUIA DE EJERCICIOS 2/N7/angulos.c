@@ -20,3 +20,41 @@ void limpiarBuffer()
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
+
+int main ()
+{
+    double angulo;
+
+    do 
+    {
+        system("cls");
+        printf("Ingrese un angulo (deg): ");
+        if (scanf("%d", &angulo) != 1 || angulo < 0) 
+        {
+            printf("Error: Dato invalido.\n");
+            limpiarBuffer();
+            sleep(3);
+            continue;
+        }
+        limpiarBuffer();
+        break;  
+
+    } while (1);
+
+    if (angulo == 90)
+    {
+        printf ("Angulo recto");
+        sleep(5);
+    }
+    else if (angulo > 90)
+    {
+        printf ("Angulo obtuso");
+        sleep(5);
+    }
+    else if (angulo < 90)
+    {
+        printf ("Angulo agudo");
+        sleep(5);
+    }
+
+}

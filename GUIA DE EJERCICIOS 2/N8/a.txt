@@ -1,0 +1,96 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <math.h>
+
+// ELABORADO POR JUAN MEDINA 16/08/2026
+
+void limpiarBuffer() 
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+double validaciontriangulos(const char *mensaje)
+{
+    double lado;
+    do 
+    {
+        system("cls");
+        printf("%s", mensaje);
+        if (scanf("%lf", &lado) != 1 || lado <= 0) 
+        {
+            printf("Error: Ingrese un numero positivo mayor a 0.\n");
+            limpiarBuffer();
+            sleep(2);
+        } 
+        else 
+        {
+            limpiarBuffer();
+            return lado;
+        }
+    } while (1);
+}
+
+void estriangulo(double l1, double l2, double l3)
+{
+    double ladomayor = l1;
+    double sumladosmenores = l2 + l3;
+
+    // Determinar el lado mayor y la suma de los menores
+    if (l2 > ladomayor) 
+    {
+        ladomayor = l2;
+        sumladosmenores = l1 + l3;
+    }
+    if (l3 > ladomayor) 
+    {
+        ladomayor = l3;
+        sumladosmenores = l1 + l2;
+    }
+
+    system("cls");
+    printf("--- DATOS INGRESADOS ---\n");
+    printf("Lado 1: %.2f\n", l1);
+    printf("Lado 2: %.2f\n", l2);
+    printf("Lado 3: %.2f\n\n", l3);
+
+    // Validar si forman un triangulo
+    if (ladomayor < sumladosmenores)
+    {
+        printf("Resultado: Es un triangulo "); 
+
+        if (l1 == l2 && l2 == l3)
+        {
+            printf("Equilatero.\n");
+        }
+        else if (l1 != l2 && l2 != l3 && l1 != l3)
+        {
+            printf("Escaleno.\n");
+        }
+        else
+        {
+            printf("Isosceles.\n");
+        }
+    }
+    else
+    {
+        printf("Resultado: No es un triangulo.\n");
+    }
+    
+    sleep(5);
+}
+
+int main()
+{
+    double l1, l2, l3;
+
+    l1 = validaciontriangulos("Ingrese el Lado 1: ");
+    l2 = validaciontriangulos("Ingrese el Lado 2: ");
+    l3 = validaciontriangulos("Ingrese el Lado 3: ");
+
+    estriangulo(l1, l2, l3);
+
+    return 0;
+}
