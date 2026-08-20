@@ -20,24 +20,48 @@ void limpiarBuffer()
     
 }
 
+int validacion (const char *mensaje)
+{
+    int num;
+    do 
+    {
+        system("cls");
+        printf("%s", mensaje);
+        if (scanf("%d", &num) != 1 || num <= 0) 
+        {
+            printf("Error: Ingrese un numero entero positivo.\n");
+            limpiarBuffer();
+            sleep(3);
+        } 
+        else 
+        {
+            limpiarBuffer();
+            return num;
+        }
+    } while (1);
+
+}
+
 
 int main()
 {
-    int mes, anio, dias;
+    int mes, year, dias;
+    do {
+        mes = validacion("Ingrese el dia: ");
+        if (mes > 12 ) printf ("Numero invalido."); sleep (2);
+    } while (mes > 12);
+    
+    do {
+        year = validacion("Ingrese el year: ");
+        if (year > 100000 ) printf ("Numero invalido."); sleep (2);
+    } while (year > 100000);
+    
+    
 
-    printf("Ingrese el numero del mes (1-12): ");
-    scanf("%d", &mes);
-    limpiarBuffer();
+     // Determinar si el año es bisiesto
+    int bisiesto = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 
-    printf("Ingrese el año: ");
-    scanf("%d", &anio);
-    limpiarBuffer();
-
-    if (mes < 1 || mes > 12) {
-        printf("Mes invalido. Debe estar entre 1 y 12.\n");
-        return 1;
-    }
-
+    // Determinar días del mes
     switch (mes) {
         case 1: case 3: case 5: case 7: case 8: case 10: case 12:
             dias = 31;
@@ -46,19 +70,11 @@ int main()
             dias = 30;
             break;
         case 2:
-            if ((anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0)) {
-                dias = 29; // Año bisiesto
-            } else {
-                dias = 28; // Año no bisiesto
-            }
-            break;
-        default:
-            dias = -1; // Esto nunca debería ocurrir debido a la validación anterior
+            dias = bisiesto ? 29 : 28;
             break;
     }
 
-    printf("El mes %d del año %d tiene %d días.\n", mes, anio, dias);
+    printf("El mes %d del anio %d tiene %d dias.\n", mes, year, dias);
 
-    return 0;
-    sleep(5);
+    sleep(10);
 }
