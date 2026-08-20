@@ -45,7 +45,7 @@ int validacion (const char *mensaje)
 
 
 int main() {
-    int dia, mes;
+    int dia, mes, i;
     int dias_por_mes[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     int dias_transcurridos = 0;
     do {
@@ -59,7 +59,7 @@ int main() {
     } while (mes > 12);
     
     // Sumar los días de los meses anteriores
-    for (int i = 0; i < mes - 1; i++) {
+    for (i = 0; i < mes - 1; i++) {
         dias_transcurridos += dias_por_mes[i];
     }
 
