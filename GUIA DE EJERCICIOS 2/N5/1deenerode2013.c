@@ -21,87 +21,53 @@ void limpiarBuffer()
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-int main ()
+int validacion (const char *mensaje)
 {
-    int dia, mes, diasTranscurridos = 0;
+    int num;
+    do 
+    {
+        system("cls");
+        printf("%s", mensaje);
+        if (scanf("%d", &num) != 1 || num <= 0) 
+        {
+            printf("Error: Ingrese un numero entero positivo.\n");
+            limpiarBuffer();
+            sleep(3);
+        } 
+        else 
+        {
+            limpiarBuffer();
+            return num;
+        }
+    } while (1);
 
-    printf("Ingrese el dia (1-31): ");
-    scanf("%d", &dia);
-    limpiarBuffer();
+}
 
-    printf("Ingrese el mes (1-12): ");
-    scanf("%d", &mes);
-    limpiarBuffer();
 
-    if (mes < 1 || mes > 12) {
-        printf("Mes invalido. Debe estar entre 1 y 12.\n");
-        return 1;
+int main() {
+    int dia, mes;
+    int dias_por_mes[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    int dias_transcurridos = 0;
+    do {
+        dia = validacion("Ingrese el dia: ");
+        if (dia > 31 ) printf ("Numero invalido."); sleep (2);
+    } while (dia > 31);
+    
+    do {
+        mes = validacion("Ingrese el mes: ");
+        if (mes > 12 ) printf ("Numero invalido."); sleep (2);
+    } while (mes > 12);
+    
+    // Sumar los días de los meses anteriores
+    for (int i = 0; i < mes - 1; i++) {
+        dias_transcurridos += dias_por_mes[i];
     }
 
-    // Validar el día según el mes
-    if ((mes == 1 || mes == 3 || mes == 5 || mes == 7 || mes == 8 || mes == 10 || mes == 12) && (dia < 1 || dia > 31)) {
-        printf("Dia invalido para el mes %d. Debe estar entre 1 y 31.\n", mes);
-        return 1;
-    } else if ((mes == 4 || mes == 6 || mes == 9 || mes == 11) && (dia < 1 || dia > 30)) {
-        printf("Dia invalido para el mes %d. Debe estar entre 1 y 30.\n", mes);
-        return 1;
-    } else if (mes == 2 && (dia < 1 || dia > 28)) { // Febrero en año no bisiesto
-        printf("Dia invalido para el mes %d. Debe estar entre 1 y 28.\n", mes);
-        return 1;
-    }
+    // Sumar los días del mes actual
+    dias_transcurridos += dia;
 
-    // Calcular los días transcurridos desde el primero de enero de 2013
-    switch (mes) {
-        case 1:
-            diasTranscurridos = dia - 1; // Enero
-            break;
-            sleep(5);
-        case 2:
-            diasTranscurridos = 31 + (dia - 1); // Enero + Febrero
-            break;
-            sleep(5);
-        case 3:
-            diasTranscurridos = 31 + 28 + (dia - 1); // Enero + Febrero + Marzo
-            break;
-            sleep(5);
-        case 4:
-            diasTranscurridos = 31 + 28 + 31 + (dia - 1); // Enero + Febrero + Marzo + Abril
-            break;
-            sleep(5);
-        case 5:
-            diasTranscurridos = 31 + 28 + 31 + 30 + (dia - 1); // Enero + Febrero + Marzo + Abril + Mayo
-            break;
-            sleep(5);   
-        case 6:
-            diasTranscurridos = 31 + 28 + 31 + 30 + 31 + (dia - 1); // Enero + Febrero + Marzo + Abril + Mayo + Junio
-            break;
-            sleep(5);
-        case 7:
-            diasTranscurridos = 31 + 28 + 31 + 30 + 31 + 30 + (dia - 1); // Enero + Febrero + Marzo + Abril + Mayo + Junio + Julio
-            break;  
-            sleep(5);
-        case 8:
-            diasTranscurridos = 31 + 28 + 31 + 30 + 31 + 30 + 31 + (dia - 1); // Enero + Febrero + Marzo + Abril + Mayo + Junio + Julio + Agosto
-            break;  
-            sleep(5);
-        case 9:
-            diasTranscurridos = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + (dia - 1); // Enero + Febrero + Marzo + Abril + Mayo + Junio + Julio + Agosto + Septiembre
-            break;
-            sleep(5);
-        case 10:
-            diasTranscurridos = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + (dia - 1); // Enero + Febrero + Marzo + Abril + Mayo + Junio + Julio + Agosto + Septiembre + Octubre
-            break;
-            sleep(5);
-        case 11:
-            diasTranscurridos = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + (dia - 1); // Enero + Febrero + Marzo + Abril + Mayo + Junio + Julio + Agosto + Septiembre + Octubre + Noviembre
-            break;
-            sleep(5);
-        case 12:
-            diasTranscurridos = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + (dia - 1); // Enero + Febrero + Marzo + Abril + Mayo + Junio + Julio + Agosto + Septiembre + Octubre + Noviembre + Diciembre
-            break;
-            sleep(5);
-        default:
-            printf("Mes invalido. Debe estar entre 1 y 12.\n");
-            return 1;
-    }
+    system ("cls");
+    printf("Han pasado %d dias desde el 1 de enero de 2013.\n", dias_transcurridos);
+    sleep(10);
+    return 0;
 }
