@@ -8,7 +8,7 @@
 
 /*
 
-escribir programa que de un mensaje de saludo y luego muestre un mensaje que digga "Porfavor introduzca el año en que nacio"
+Escribir un programa que de un mensaje de saludo y luego muestre un mensaje que digga "Porfavor introduzca el año en que nacio"
 luego el programa debe soltar ¨Si usted nacio en (fecha) este año cumple (edad calculada) años¨
 
 */
