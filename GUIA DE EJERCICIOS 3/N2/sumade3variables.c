@@ -21,3 +21,43 @@ void limpiarBuffer()
     while ((c = getchar()) != '\n' && c != EOF);
     
 }
+
+int validacion (const char *mensaje)
+{
+    int num;
+    do 
+    {
+        system("cls");
+        printf("%s", mensaje);
+        if (scanf("%d", &num) != 1 || num <=0) 
+        {
+            printf("Error: Ingrese un numero entero positivo.\n");
+            limpiarBuffer();
+            sleep(3);
+        } 
+        else 
+        {
+            limpiarBuffer();
+            return num;
+        }
+    } while (1);
+
+}
+
+
+int main ()
+{
+    int a= 5, b= 7, c= 9;
+    int suma1, suma2;
+
+    suma1 = a + b + c;
+    printf ("La suma es: %d", suma1); sleep(5);
+
+    a = validacion("Ingrese un numero: ");
+    b = validacion("Ingrese un numero: ");
+    c = validacion("Ingrese un numero: ");
+
+    suma2= a + b + c;
+    system("cls");
+    printf ("La suma es: %d", suma2); sleep(5);
+}
