@@ -27,7 +27,7 @@ double validacion (const char *mensaje)
     {
         system("cls");
         printf("%s", mensaje);
-        if (scanf("%d", &num) != 1 || num <=0) 
+        if (scanf("%lf", &num) != 1 || num <=0) 
         {
             printf("Error: Ingrese un numero entero positivo.\n");
             limpiarBuffer();
@@ -39,5 +39,31 @@ double validacion (const char *mensaje)
             return num;
         }
     } while (1);
+
+}
+
+int main ()
+{
+
+    double a, b, temp;
+
+    a = validacion("Ingrese un numero: ");
+    b = validacion("Ingrese otro numero:");
+
+    system("cls");
+    printf ("a = %.2lf\n", a);
+    printf ("b = %.2lf\n", b);
+    sleep(3);
+    
+    temp = a;
+    a=b;
+    b=temp;
+    
+    system("cls");
+    printf ("- a = %.2lf\n", a);
+    printf ("- b = %.2lf\n", b);
+    sleep(3);
+    
+
 
 }
