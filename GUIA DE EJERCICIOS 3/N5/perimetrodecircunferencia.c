@@ -1,9 +1,9 @@
+#define _USE_MATH_DEFINES 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <math.h>
-
 // ELABORADO POR JUAN MEDINA 20/08/2026
 
 /*
@@ -27,7 +27,7 @@ double validacion (const char *mensaje)
     {
         system("cls");
         printf("%s", mensaje);
-        if (scanf("%d", &num) != 1 || num <=0) 
+        if (scanf("%lf", &num) != 1 || num <=0) 
         {
             printf("Error: Ingrese un numero entero positivo.\n");
             limpiarBuffer();
@@ -40,4 +40,16 @@ double validacion (const char *mensaje)
         }
     } while (1);
 
+}
+
+int main ()
+{
+    double r, perimetro;
+
+    r = validacion("Ingrese el radio de la circunferencia: ");
+    
+    perimetro = 2 * M_PI * r;
+    printf("El perimetro es: %.2lf", perimetro);
+    sleep(10);
+    
 }

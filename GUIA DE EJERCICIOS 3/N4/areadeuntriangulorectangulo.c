@@ -9,7 +9,6 @@
 /*
 
 calcule el area de un triangulo rectangulo, pidiendo al usuario la altura y la base.
-- Valida si es un triangulo rectangulo
 - formula: area = (base*altura)/2
 
 */
@@ -28,7 +27,7 @@ double validacion (const char *mensaje)
     {
         system("cls");
         printf("%s", mensaje);
-        if (scanf("%d", &num) != 1 || num <=0) 
+        if (scanf("%lf", &num) != 1 || num <=0) 
         {
             printf("Error: Ingrese un numero entero positivo.\n");
             limpiarBuffer();
@@ -43,3 +42,16 @@ double validacion (const char *mensaje)
 
 }
 
+int main ()
+{
+    double alt, base, area;
+
+    alt = validacion("Ingrese la altura: ");
+    base = validacion("Ingrese la base: ");
+
+    area = (base*alt)/2;
+
+    printf("El area es: %.2lf", area);
+    sleep(10);
+
+}

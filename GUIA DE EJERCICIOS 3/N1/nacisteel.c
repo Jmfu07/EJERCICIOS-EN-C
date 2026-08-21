@@ -19,3 +19,38 @@ void limpiarBuffer()
     while ((c = getchar()) != '\n' && c != EOF);
     
 }
+
+int validacion (const char *mensaje)
+{
+    int num;
+    do 
+    {
+        system("cls");
+        printf("%s", mensaje);
+        if (scanf("%d", &num) != 1 || num <=0) 
+        {
+            printf("Error: Ingrese un numero entero positivo.\n");
+            limpiarBuffer();
+            sleep(3);
+        } 
+        else 
+        {
+            limpiarBuffer();
+            return num;
+        }
+    } while (1);
+
+}
+
+
+int main ()
+{
+
+    int e, r = 2026, resultado;
+
+    printf("Hola! Que tal?");
+    e = validacion("Ingresa el año en que nacio: ");
+    resultado = r - e;
+    printf ("Si usted nacio en %d usted tendra en %d la edad de %d años", e, r, resultado);
+    sleep(5);
+}

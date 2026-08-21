@@ -9,7 +9,7 @@
 /*
 
 Escriba un programa que pregunte al usuario su edad y luego compruebe si es mayor de 21 años.
-si es mayor debera escribirun 1 y si es menor un 0.
+si es mayor debera escribir un 1 y si es menor un 0.
 
 */
 
@@ -40,4 +40,13 @@ double validacion (const char *mensaje)
         }
     } while (1);
 
+}
+
+int main ()
+{
+    double edad;
+    edad = validacion("Ingrese su edad: ");
+
+    if (edad > 21) { printf ("1"); sleep(10);}
+    else if (edad < 21) printf ("0"); sleep(10);
 }
