@@ -8,6 +8,9 @@
 
 /*
 
+Realizar un programa que tenga un array unidimensional de 30 elementos de tipo numerico entero
+y nombre "numeros". Cargar el array con valores positivos, negativos y ceros almacenados en el 
+array y mostrar los resultados obtenidos.
 
 */
 

@@ -8,6 +8,14 @@
 
 /*
 
+Un programa que gestione las notas de una clase de 20 alumnos de los cuales sabemos el nombre y la nota.
+El programa debe ser capaz de:
+1- Buscar un alumno
+2- Modificar su nota
+3. Realizar la media de todas las notas
+4. Realizar la media de las notas menores de 5
+5. Mostrar el alumno que mejores notas ha sacado
+6. Mostrar el alumno que peores notas ha sacado
 
 */
 

@@ -8,6 +8,7 @@
 
 /*
 
+Un programa que lea 10 numeros por teclado, los almacene en un array y muestre la media
 
 */
 

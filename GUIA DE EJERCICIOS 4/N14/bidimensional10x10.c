@@ -8,6 +8,10 @@
 
 /*
 
+Realizar un programa que tenga un array bidimensional de longitud 10x10 y nombre ¨matriz¨.
+Cargar el array con valores numericos enteros numericos enteros. Mostrar por pantalla todos
+los elementos de cada fila y su suma y todos los elementos de cada columna y su suma.
+
 
 */
 

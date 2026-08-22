@@ -8,6 +8,9 @@
 
 /*
 
+Copia de arrays. Crear un programa que contenga una funcion llamada copiar array que reciba
+dos arrays y el tamaño de los mismos (deben de ser del mismo tamaño) y que consiga copiar en el 
+segundo array el contenido del primero.
 
 */
 

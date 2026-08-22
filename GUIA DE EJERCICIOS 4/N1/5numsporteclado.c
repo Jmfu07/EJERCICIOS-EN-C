@@ -8,6 +8,8 @@
 
 /*
 
+Que lea 5 numeros por teclado, los copie en otro array multiplicados por 2 
+y muestre el segundo array.
 
 */
 

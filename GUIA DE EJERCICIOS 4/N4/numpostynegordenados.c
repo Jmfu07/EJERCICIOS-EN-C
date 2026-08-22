@@ -8,6 +8,8 @@
 
 /*
 
+Mediante un array almacene numeros tanto positivos como negativos y los 
+muestre ordenados.
 
 */
 

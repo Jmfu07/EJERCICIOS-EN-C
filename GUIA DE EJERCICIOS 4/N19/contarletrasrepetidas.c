@@ -8,6 +8,8 @@
 
 /*
 
+Contar letras repetidas. Crear un programa que cree un array con 50 letras mayusculas aleatorias y 
+que cuante cuantas veces aparece cada letras en el array.
 
 */
 

@@ -8,6 +8,9 @@
 
 /*
 
+Hacer un programa que tenga un array unidimensional de 10 elementos de tipo numerico entero.
+Cargar el array con valores enteros positivos y negativos introducidos por teclado. Mostrar en pantalla
+cada elemento del array junto a su cuadrado y su cubo
 
 */
 

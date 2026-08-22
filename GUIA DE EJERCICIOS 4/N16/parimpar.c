@@ -8,6 +8,10 @@
 
 /*
 
+Ordenar pares e impares. Crear un programa llamado pares impares que cree un programa
+de 100 numeros aleatorios del 1 al 1000. Una vez creado, mostrar el contenido y despues 
+organizarlo de forma que esten juntos los elementos pares y los impares. Despues, volver 
+mostrar el array
 
 */
 

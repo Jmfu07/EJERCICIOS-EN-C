@@ -8,6 +8,8 @@
 
 /*
 
+Un programa que pinte un tablero de ajedrez, los peones con la letra P, las torres con T,
+los caballos con C, los alfiles con A, el rey con R y la reina con M.
 
 */
 

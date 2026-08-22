@@ -8,6 +8,9 @@
 
 /*
 
+Reserva de asientos. Crear un programa que mediante un menu admita reservar o cancelar
+asientos de una sala de cine, asi como mostrar que asientos estan ocupados y libres 
+actualmente. El array tendra 25 filas y 4 columnas. 
 
 */
 

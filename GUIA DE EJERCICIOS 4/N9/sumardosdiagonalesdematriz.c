@@ -8,6 +8,9 @@
 
 /*
 
+Escribir un programa que cree una matriz de NxN elementos (N=20). El programa
+debe leer la matriz y calcular la suma de los elementos de las diagonales de la matriz
+
 
 */
 

@@ -8,6 +8,9 @@
 
 /*
 
+Realizar un programa que tenga un array unidimensional de 20 elementos de tipo
+numerico entero y de nombre "pares". Cargar el array con los primeros 20 numeros 
+pares y mostrar el contenido del array en pantalla en grupos de 5.
 
 */
 

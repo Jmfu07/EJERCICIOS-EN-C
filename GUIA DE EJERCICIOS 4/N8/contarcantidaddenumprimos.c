@@ -8,6 +8,7 @@
 
 /*
 
+Dada una matriz y un vector, contar la cantidad de numeros primos en ambos.
 
 */
 
