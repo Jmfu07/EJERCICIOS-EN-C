@@ -19,9 +19,9 @@ void limpiarBuffer()
     
 }
 
-double validacion (const char *mensaje)
+int validacion (const char *mensaje)
 {
-    double num;
+    int num;
     do 
     {
         system("cls");
@@ -39,4 +39,23 @@ double validacion (const char *mensaje)
         }
     } while (1);
 
+}
+
+int main ()
+{
+
+    int a [10], suma=0, i=0;
+    for (i = 0; i < 10; i++)
+    {
+        a[i]=validacion("Ingresa un numero: ");
+        suma += a[i];
+    }
+
+
+    for (i = 0; i < 10; i++)
+    {
+        printf ("%d ", a[i]);
+    }
+    printf ("\n La suma de todos es %d", suma);
+    sleep(10);
 }
