@@ -1,3 +1,4 @@
+#define __USE_MINGW_ANSI_STDIO 1
 #define _USE_MATH_DEFINES 
 #include <stdio.h>
 #include <stdlib.h>

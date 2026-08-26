@@ -1,3 +1,4 @@
+#define __USE_MINGW_ANSI_STDIO 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -53,6 +54,8 @@ int main()
 
     system("cls");
     printf("El área del triángulo es: %.2Lf\n", area);
+    printf("Version de GCC: %s\n", __VERSION__);
+
 
     sleep(5);
 }

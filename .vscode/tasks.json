@@ -1,9 +1,10 @@
 {
+    "version": "2.0.0",
     "tasks": [
         {
-            "type": "cppbuild",
-            "label": "C/C++: gcc.exe compilar archivo activo",
-            "command": "C:\\TDM-GCC-64\\bin\\gcc.exe",
+            "type": "shell",
+            "label": "Compilar con MSYS2",
+            "command": "C:\\LENGUAJES\\MSYS2\\ucrt64\\bin\\gcc.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
@@ -20,9 +21,7 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
-            },
-            "detail": "Tarea generada por el depurador."
+            }
         }
-    ],
-    "version": "2.0.0"
+    ]
 }
