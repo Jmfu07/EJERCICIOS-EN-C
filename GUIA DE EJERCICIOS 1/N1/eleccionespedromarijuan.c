@@ -14,6 +14,7 @@ void menu()
     printf("--------------------------------------------------------\n");
     printf("Por favor, siga las instrucciones para registrar su voto.\n");
     printf("--------------------------------------------------------\n");
+    
 }
 
 void menuvoto() 
