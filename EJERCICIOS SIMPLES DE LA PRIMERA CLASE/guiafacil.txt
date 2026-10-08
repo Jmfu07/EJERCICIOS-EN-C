@@ -1,0 +1,11 @@
+Ejercicio de Lenguajes de Programación: 
+
+1. Ingrese por teclado los valores numéricos enteros y calculé la suma resta y multiplicación de ellos (Imprimir los resultados con los mensajes respectivos)
+
+2. Ingrese por teclado, Nombre, Edad, Monto de asignación mensuales y Monto de deducciones mensuales. Calcular el sueldo neto mensual, quincenal y semanal
+
+3. Ingrese por teclado los siguientes datos de un alumno: Nombre, Edad, Nota uno, Nota dos, Nota. Se pide calcular, el promedio del estudiante e imprimirlo con su nombre
+
+4. Ingrese por teclado, los siguientes datos producto de una llamada telefónica: Nombre, Número de teléfono y cantidad de minutos de la llamada como VALOR ENTERO. SE PIDE: Calcular el costo de la llamada telefónica teniendo en cuenta que el costo por minuto es de 8$. Imprimir el nombre de la persona con el costo de la llamada respectiva.
+
+5. Ingrese por teclado el radio de un círculo y calculé su área.
