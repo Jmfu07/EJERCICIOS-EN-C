@@ -19,5 +19,6 @@ int main ()
 
     area = PI * pow(radio,2);
     printf ("EL AREA DE UNA CIRCUNFERENCIA DE RADIO %.2f ES DE %.2f UNIDADES\n", radio, area);
+ 
     getche();
 }
