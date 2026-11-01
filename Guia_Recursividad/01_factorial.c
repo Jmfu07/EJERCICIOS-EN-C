@@ -1,7 +1,7 @@
 /* EJERCICIO 1: FACTORIAL
-   Funcionamiento: n! es 1 cuando n=0 o n=1. Para los demas valores se calcula
-   n * (n-1)!; por eso la funcion se llama a si misma.
-   Tipos: int para el dato y long long para evitar desbordamiento en resultados pequenos.
+Funcionamiento: n! es 1 cuando n=0 o n=1. Para los demas valores se calcula
+n * (n-1)!; por eso la funcion se llama a si misma.
+Tipos: int para el dato y long long para evitar desbordamiento en resultados pequenos.
 */
 #include <stdio.h>
 long long factorial(int n) { 
