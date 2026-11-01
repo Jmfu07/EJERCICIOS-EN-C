@@ -3,15 +3,21 @@ Funcionamiento: si n es par se divide entre 2; si es impar se calcula 3n+1; term
 Tipo: long long para soportar valores mayores durante la secuencia.
 */
 #include <stdio.h>
+#include <stdlib.h>
 int main(void) {
     long long n;
     scanf("%lld",&n);
-    if(n<=0)return 0;
+    if(n<=0) {
+        printf("El numero debe ser positivo.\n");
+        system("pause");
+        return 0;
+    }
     while(n!=1) {
         printf("%lld ",n);
         if(n%2==0)n/=2;
         else n=3*n+1;
     }
     printf("1\n");
+    system("pause");
     return 0;
 }

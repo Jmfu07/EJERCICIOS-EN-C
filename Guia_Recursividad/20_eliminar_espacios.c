@@ -3,6 +3,7 @@ Funcionamiento: cada caracter no blanco se copia al destino; los espacios solo s
 Tipos: char[] para cadenas e int para las posiciones de lectura/escritura.
 */
 #include <stdio.h>
+#include <stdlib.h>
 void quitar(char o[],char d[],int i,int j) {
     if(!o[i]) {
         d[j]=0;
@@ -18,5 +19,6 @@ int main(void) {
     fgets(o,100,stdin);
     quitar(o,d,0,0);
     printf("%s\n",d);
+    system("pause");
     return 0;
 }

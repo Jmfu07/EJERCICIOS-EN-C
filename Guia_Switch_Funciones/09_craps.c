@@ -14,10 +14,12 @@ int main(void) {
     printf("%d + %d = %d\n",a,b,s);
     if(s==7||s==11) {
         puts("Gana jugador");
+        system("pause");
         return 0;
     }
     if(s==2||s==3||s==12) {
         puts("Gana casa");
+        system("pause");
         return 0;
     }
     p=s;
@@ -29,5 +31,6 @@ int main(void) {
     }
     while(s!=p&&s!=7);
     puts(s==p?"Gana jugador":"Gana casa");
+    system("pause");
     return 0;
 }

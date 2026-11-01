@@ -3,6 +3,7 @@ Funcionamiento: mueve n-1 discos a la torre auxiliar, mueve el mayor al destino 
 Tipos: int para discos y char para nombres de torres.
 */
 #include <stdio.h>
+#include <stdlib.h>
 void hanoi(int n,char o,char a,char d) {
     if(n==1) {
         printf("Mover disco 1 de %c a %c\n",o,d);
@@ -17,5 +18,6 @@ int main(void) {
     printf("Discos: ");
     scanf("%d",&n);
     if(n>0&&n<16)hanoi(n,'A','B','C');
+    system("pause");
     return 0;
 }

@@ -3,6 +3,7 @@ Funcionamiento: se acumula la suma y se actualizan minimo y maximo al leer cada 
 Tipos: double para notas/promedio; int para el contador.
 */
 #include <stdio.h>
+#include <stdlib.h>
 int main(void) {
     double x,s=0,ma=0,mi=0;
     int i;
@@ -13,5 +14,6 @@ int main(void) {
         if(i==0||x<mi)mi=x;
     }
     printf("Promedio %.2f, Maxima %.2f, Minima %.2f\n",s/4,ma,mi);
+    system("pause");
     return 0;
 }

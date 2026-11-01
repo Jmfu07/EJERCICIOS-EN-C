@@ -3,6 +3,7 @@ Funcionamiento: se suma el ultimo digito n%10 y se repite con n/10 hasta quedar 
 Tipos: int para el numero y la suma.
 */
 #include <stdio.h>
+#include <stdlib.h>
 int sumaDigitos(int n) {
     if (n < 0) n = -n;
     if (n < 10) return n;
@@ -13,5 +14,6 @@ int main(void) {
     printf("Ingrese un entero: ");
     scanf("%d", &n);
     printf("Suma = %d\n", sumaDigitos(n));
+    system("pause");
     return 0;
 }

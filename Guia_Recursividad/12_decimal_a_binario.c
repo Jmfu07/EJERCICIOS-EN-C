@@ -3,6 +3,7 @@ Funcionamiento: se divide entre 2 recursivamente y se imprime el residuo al regr
 Tipos: unsigned int representa el numero no negativo.
 */
 #include <stdio.h>
+#include <stdlib.h>
 void bin(unsigned int n) {
     if(n>1)bin(n/2);
     printf("%u",n%2);
@@ -13,5 +14,6 @@ int main(void) {
     if(!n)printf("0");
     else bin(n);
     printf("\n");
+    system("pause");
     return 0;
 }

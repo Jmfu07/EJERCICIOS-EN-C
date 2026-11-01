@@ -5,6 +5,7 @@ Tipos: char[] para la cadena e int para posiciones y valor logico (0 o 1).
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 int pal(char s[],int i,int j) {
     while(i<j&&!isalnum((unsigned char)s[i]))i++;
     while(i<j&&!isalnum((unsigned char)s[j]))j--;
@@ -18,5 +19,6 @@ int main(void) {
     fgets(s,100,stdin);
     s[strcspn(s,"\n")]=0;
     printf(pal(s,0,(int)strlen(s)-1)?"Es palindromo\n":"No es palindromo\n");
+    system("pause");
     return 0;
 }

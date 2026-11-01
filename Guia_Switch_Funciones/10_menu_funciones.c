@@ -3,6 +3,7 @@ Funcionamiento: un switch selecciona clasificar pares/impares, buscar perfectos 
 Tipos: int para enteros, sumas, opciones y posiciones.
 */
 #include <stdio.h>
+#include <stdlib.h>
 int perfecto(int n) {
     int s=0,d;
     for(d=1; d<=n/2; d++)if(n%d==0)s+=d;
@@ -32,5 +33,6 @@ int main(void) {
         }
     }
     while(op);
+    system("pause");
     return 0;
 }
