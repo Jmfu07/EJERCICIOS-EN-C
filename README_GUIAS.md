@@ -48,6 +48,30 @@ Cada ejercicio está separado en su propio archivo `.c`. Al principio de cada ar
 | `11_mcd_recursivo.c` | MCD recursivo | `int` |
 | `12_ackermann.c` | Función de Ackermann | `unsigned int`, `unsigned long long` |
 
+## Guia de matrices
+
+| Archivo | Ejercicio | Tipos principales |
+|---|---|---|
+| `01_copiar_multiplicar.c` | Copiar y multiplicar por 2 | `int`, `int[]` |
+| `02_copiar_multiplicar_ordenado.c` | Copiar, multiplicar y ordenar | `int`, `int[]` |
+| `03_media_de_10_numeros.c` | Media de 10 números | `double`, `int[]` |
+| `04_ordenar_positivos_negativos.c` | Ordenar positivos y negativos | `int`, `int[]` |
+| `05_tablero_ajedrez.c` | Tablero de ajedrez | `char`, `char[][]` |
+| `06_notas_clase.c` | Gestión de notas de una clase | `char[][]`, `double[]`, `int` |
+| `07_notas_cursos.c` | Notas por curso y asignatura | `double[][][]`, `int` |
+| `08_primos_matriz_vector.c` | Primos en matriz y vector | `int[][]`, `int[]` |
+| `09_suma_dos_diagonales.c` | Suma de diagonales | `int[][]`, `int` |
+| `10_primeros_pares.c` | Primeros 20 pares | `int[]` |
+| `11_contar_positivos_negativos_ceros.c` | Clasificar valores | `int[]`, `int` |
+| `12_maximo_y_posicion.c` | Máximo y posición | `double[]`, `int` |
+| `13_cuadrado_y_cubo.c` | Cuadrado y cubo | `int[]`, `long long` |
+| `14_suma_filas_columnas.c` | Suma de filas y columnas | `int[][]`, `int` |
+| `15_copiar_arrays.c` | Copiar arrays con una función | `int[]`, `int` |
+| `16_ordenar_pares_impares.c` | Ordenar pares e impares | `int[]`, `time_t` |
+| `17_vendedores.c` | Ingresos de vendedores | `double[][]`, `int` |
+| `18_reserva_asientos.c` | Reserva de asientos | `int[][]`, `int` |
+| `19_contar_letras.c` | Contar letras repetidas | `char[]`, `int[]` |
+
 ## Compilación
 
 Desde una terminal ubicada dentro de cualquiera de las carpetas:
