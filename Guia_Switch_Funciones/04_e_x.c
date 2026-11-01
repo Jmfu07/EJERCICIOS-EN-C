@@ -3,6 +3,7 @@ Funcionamiento: aproxima e^x con 1+x+x^2/2!+... usando una cantidad de terminos.
 Tipos: double para x, factoriales y suma; int para terminos y ciclos.
 */
 #include <stdio.h>
+#include <stdlib.h>
 int main(void) {
     double x,s=0,p=1,f=1;
     int n,i;
@@ -15,5 +16,6 @@ int main(void) {
         s+=p/f;
     }
     printf("e^x = %.10f\n",s);
+    system("pause");
     return 0;
 }

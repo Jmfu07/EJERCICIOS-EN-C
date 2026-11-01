@@ -3,6 +3,7 @@ Funcionamiento: en cada posicion se prueba primero 0 y despues 1 hasta completar
 Tipos: char[] guarda la combinacion e int controla posiciones y longitud.
 */
 #include <stdio.h>
+#include <stdlib.h>
 void generar(char s[],int p,int n) {
     if(p==n) {
         s[p]=0;
@@ -20,5 +21,6 @@ int main(void) {
     printf("Longitud: ");
     scanf("%d",&n);
     if(n>=0&&n<30)generar(s,0,n);
+    system("pause");
     return 0;
 }

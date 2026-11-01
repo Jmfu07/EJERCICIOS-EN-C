@@ -4,6 +4,7 @@ Tipos: char[] almacena la cadena; int representa posiciones.
 */
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 void invertir(char s[], int i, int j) {
     char t;
     if (i >= j) return;
@@ -19,5 +20,6 @@ int main(void) {
     s[strcspn(s,"\n")]=0;
     invertir(s,0,(int)strlen(s)-1);
     printf("Invertida: %s\n",s);
+    system("pause");
     return 0;
 }

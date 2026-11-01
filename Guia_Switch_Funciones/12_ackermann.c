@@ -3,6 +3,7 @@ Funcionamiento: A(0,n)=n+1; A(m,0)=A(m-1,1); en otro caso A(m,n)=A(m-1,A(m,n-1))
 Tipos: unsigned int para argumentos naturales y unsigned long long para el resultado.
 */
 #include <stdio.h>
+#include <stdlib.h>
 unsigned long long A(unsigned int m,unsigned int n) {
     if(!m)return n+1;
     if(!n)return A(m-1,1);
@@ -13,5 +14,6 @@ int main(void) {
     scanf("%u%u",&m,&n);
     if(m<=3&&n<=10)printf("%llu\n",A(m,n));
     else puts("Valores demasiado grandes");
+    system("pause");
     return 0;
 }

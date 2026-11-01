@@ -3,6 +3,7 @@ Funcionamiento: prueba divisores desde 2; si alguno divide exactamente, no es pr
 Tipos: int para numero, divisor y resultado logico.
 */
 #include <stdio.h>
+#include <stdlib.h>
 int primo(int n,int d) {
     if(n<2)return 0;
     if(d>n/d)return 1;
@@ -13,5 +14,6 @@ int main(void) {
     int n;
     scanf("%d",&n);
     printf(primo(n,2)?"Es primo\n":"No es primo\n");
+    system("pause");
     return 0;
 }

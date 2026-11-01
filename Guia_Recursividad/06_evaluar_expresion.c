@@ -47,5 +47,6 @@ int main(void) {
     fgets(s,100,stdin);
     s[strcspn(s,"\n")]=0;
     printf("Resultado: %d\n",eval(s,0,(int)strlen(s)-1));
+    system("pause");
     return 0;
 }

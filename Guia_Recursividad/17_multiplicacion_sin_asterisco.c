@@ -3,6 +3,7 @@ Funcionamiento: multiplicar a por b equivale a sumar a b veces. El caso negativo
 Tipos: int para operandos y resultado.
 */
 #include <stdio.h>
+#include <stdlib.h>
 int mult(int a,int b) {
     if(!b)return 0;
     if(b<0)return-mult(a,-b);
@@ -12,5 +13,6 @@ int main(void) {
     int a,b;
     scanf("%d%d",&a,&b);
     printf("Resultado: %d\n",mult(a,b));
+    system("pause");
     return 0;
 }
