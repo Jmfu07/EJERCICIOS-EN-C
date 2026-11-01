@@ -6,7 +6,9 @@ Tipos: char[] para la expresion e int para indices y resultado.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-int eval(char s[],int i,int f) {
+
+int eval(char s[],int i,int f) 
+{
     int p=-1,n=0;
     char op=0;
     while(i<=f&&s[i]==' ')i++;
@@ -41,7 +43,8 @@ int eval(char s[],int i,int f) {
     int a=eval(s,i,p-1),b=eval(s,p+1,f);
     return op=='+'?a+b:op=='-'?a-b:a*b;
 }
-int main(void) {
+
+int main() {
     char s[100];
     printf("Ejemplo 3+2*4: ");
     fgets(s,100,stdin);

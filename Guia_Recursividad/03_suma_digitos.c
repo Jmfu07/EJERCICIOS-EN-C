@@ -4,12 +4,14 @@ Tipos: int para el numero y la suma.
 */
 #include <stdio.h>
 #include <stdlib.h>
+
 int sumaDigitos(int n) {
     if (n < 0) n = -n;
     if (n < 10) return n;
     return n % 10 + sumaDigitos(n / 10);
 }
-int main(void) {
+
+int main() {
     int n;
     printf("Ingrese un entero: ");
     scanf("%d", &n);

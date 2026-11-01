@@ -11,11 +11,11 @@ long long factorial(int n) {
     return n * factorial(n - 1);
 }
 int main(void) {
-    int n;
-    printf("Ingrese n (0 a 20): ");
-    scanf("%d", &n);
-    if (n < 0 || n > 20) printf("Valor invalido.\n");
-    else printf("%d! = %lld\n", n, factorial(n));
-    system("pause");
-    return 0;
+   int n;
+   printf("Ingrese n (0 a 20): ");
+   scanf("%d", &n);
+   if (n < 0 || n > 20) printf("Valor invalido.\n");
+   else printf("%d! = %lld\n", n, factorial(n));
+   system("pause");
+   return 0;
 }

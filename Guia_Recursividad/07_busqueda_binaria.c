@@ -5,6 +5,7 @@ Tipos: int[] para datos e int para indices, valor y posicion.
 */
 #include <stdio.h>
 #include <stdlib.h>
+
 int buscar(int a[],int i,int f,int x) {
     if(i>f)return -1;
     int m=(i+f)/2;
@@ -12,6 +13,7 @@ int buscar(int a[],int i,int f,int x) {
     if(x<a[m])return buscar(a,i,m-1,x);
     return buscar(a,m+1,f,x);
 }
+
 int main(void) {
     int a[100],n,x,i,p;
     printf("Cantidad: ");

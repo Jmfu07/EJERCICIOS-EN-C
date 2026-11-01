@@ -4,11 +4,13 @@ Tipos: int[] para el arreglo e int para el tamano y el resultado.
 */
 #include <stdio.h>
 #include <stdlib.h>
+
 int contar(int a[], int n) {
     if (n <= 0) return 0;
     return 1 + contar(a,n-1);
 }
-int main(void) {
+
+int main() {
     int a[100],n,i;
     printf("Cantidad: ");
     scanf("%d",&n);

@@ -9,7 +9,7 @@ int mult(int a,int b) {
     if(b<0)return-mult(a,-b);
     return a+mult(a,b-1);
 }
-int main(void) {
+int main() {
     int a,b;
     scanf("%d%d",&a,&b);
     printf("Resultado: %d\n",mult(a,b));

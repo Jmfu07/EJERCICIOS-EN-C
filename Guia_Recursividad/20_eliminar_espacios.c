@@ -14,7 +14,8 @@ void quitar(char o[],char d[],int i,int j) {
         quitar(o,d,i+1,j+1);
     }else quitar(o,d,i+1,j);
 }
-int main(void) {
+
+int main() {
     char o[100],d[100];
     fgets(o,100,stdin);
     quitar(o,d,0,0);

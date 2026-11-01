@@ -15,6 +15,7 @@ void generar(char s[],int p,int n) {
     s[p]='1';
     generar(s,p+1,n);
 }
+
 int main(void) {
     char s[30];
     int n;

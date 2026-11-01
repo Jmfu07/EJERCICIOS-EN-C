@@ -10,7 +10,8 @@ int primo(int n,int d) {
     if(n%d==0)return 0;
     return primo(n,d+1);
 }
-int main(void) {
+
+int main() {
     int n;
     scanf("%d",&n);
     printf(primo(n,2)?"Es primo\n":"No es primo\n");

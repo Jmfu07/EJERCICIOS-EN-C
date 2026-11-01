@@ -4,12 +4,14 @@ Tipos: int[] para datos e int para tamano.
 */
 #include <stdio.h>
 #include <stdlib.h>
+
 void inverso(int a[],int n) {
     if(!n)return;
     printf("%d ",a[n-1]);
     inverso(a,n-1);
 }
-int main(void) {
+
+int main() {
     int a[100],n,i;
     scanf("%d",&n);
     for(i=0; i<n; i++)scanf("%d",&a[i]);
