@@ -10,7 +10,7 @@ int buscar(int a[],int i,int f,int x) {
     if(i>f)return -1;
     int m=(i+f)/2;
     if(a[m]==x)return m;
-    if(x<a[m])return buscar(a,i,m-1,x);
+z    if(x<a[m])return buscar(a,i,m-1,x);
     return buscar(a,m+1,f,x);
 }
 
