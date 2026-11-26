@@ -1,51 +1,66 @@
 /* EJERCICIO 12: DECIMAL A BINARIO
-Funcionamiento: se divide entre 2 recursivamente y se imprime el residuo al regresar.
-Tipos: unsigned int representa el numero no negativo.
-*/
+ * Funcionamiento: se divide entre 2 recursivamente y se imprime el residuo al regresar.
+ * Tipos: unsigned int para la parte entera y double para fraccionaria opcional.
+ */
 #include <stdio.h>
 #include <stdlib.h>
+#include <conio.h>
 
+static double leer_decimal_pos(const char *prompt)
+{
+    char buf[20]; int len = 0, hay_punto = 0, cuenta = 0, i, c;
+    printf("%s", prompt);
+    for (;;) {
+        c = _getch();
+        if (c == 0 || c == 0xE0) { _getch(); continue; }
+        if (c == '\r') { if (cuenta > 0) break; continue; }
+        if (c == '\b') {
+            if (len > 0) {
+                len--;
+                if (buf[len] == '.') hay_punto = 0;
+                cuenta = 0;
+                for (i = 0; i < len; i++) if (buf[i] != '.') cuenta++;
+                printf("\b \b");
+            }
+            continue;
+        }
+        if (c >= '0' && c <= '9' && cuenta < 9) {
+            cuenta++; buf[len++] = (char)c; putchar(c);
+        } else if ((c == '.' || c == ',') && !hay_punto) {
+            hay_punto = 1; buf[len++] = '.'; putchar('.');
+        }
+    }
+    buf[len] = '\0'; putchar('\n');
+    return strtod(buf, NULL);
+}
 
-// Función recursiva clásica SOLO para la parte entera
-void bin_entera(int n) {
+void bin_entera(unsigned int n)
+{
     if (n > 1) bin_entera(n / 2);
-    printf("%d", n % 2);
+    printf("%u", n % 2);
 }
 
-// Función para procesar la parte fraccionaria (multiplicando por 2)
-void bin_fraccionaria(double f) {
-    if (f == 0) return;
-    
-    printf("."); // Imprime el punto decimal binario
-    
-    // Multiplicamos por 2 hasta un límite de dígitos (ej. 6) para evitar bucles infinitos
-    for (int i = 0; i < 6 && f > 0; i++) {
-        f *= 2;
-        int bit = (int)f; // Tomamos la parte entera (0 o 1)
-        printf("%d", bit);
-        f -= bit;         // Nos quedamos solo con el nuevo residuo decimal
-    }
+void bin_fraccionaria(double f, int paso)
+{
+    int bit;
+    if (f <= 0.0 || paso >= 6) return;
+    if (paso == 0) printf(".");
+    f *= 2.0;
+    bit = (int)f;
+    printf("%d", bit);
+    bin_fraccionaria(f - bit, paso + 1);
 }
 
-int main() {
-    double n;
-    printf("Introduce un numero decimal: ");
-    if (scanf("%lf", &n) != 1) return 1;
+int main(void)
+{
+    double n = leer_decimal_pos("Introduce un numero decimal positivo: ");
+    unsigned int parte_entera = (unsigned int)n;
+    double parte_fraccionaria = n - parte_entera;
 
-    if (n == 0) {
-        printf("0\n");
-    } else {
-        int parte_entera = (int)n;
-        double parte_fraccionaria = n - parte_entera;
-
-        // 1. Imprimir parte entera
-        bin_entera(parte_entera);
-        
-        // 2. Imprimir parte fraccionaria si existe
-        bin_fraccionaria(parte_fraccionaria);
-        
-        printf("\n");
-    }
+    printf("Representacion binaria: ");
+    bin_entera(parte_entera);
+    bin_fraccionaria(parte_fraccionaria, 0);
+    printf("\n");
 
     system("pause");
     return 0;

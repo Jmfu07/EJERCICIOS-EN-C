@@ -1,196 +1,352 @@
-#define __USE_MINGW_ANSI_STDIO 1
+#define _WIN32_WINNT 0x0601
+#include <windows.h>
+#include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
 #include <ctype.h>
 
-// ELABORADO POR JUAN MEDINA 16/08/2026
+/* ELABORADO POR JUAN MEDINA 16/08/2026
+ * 4.- Los empleados de una fabrica trabajan en dos turnos: diurno y nocturno.
+ * Se desea calcular el jornal diario de acuerdo al siguiente baremo:
+ *   a) Las horas diurnas se pagan a 1000 Bsf.
+ *   b) Las horas nocturnas se pagan a 1600 Bsf.
+ *   c) En caso de ser domingo, la tarifa se incrementara en 400 Bsf el turno diurno y en 600 el nocturno.
+ */
 
-/* 
-Los empleados de una fabrica trabajan en dos turnos 
+#define PERMITIR_ALTGR 0
+#define POL "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\"
 
-las horas diurnas se pagan a 1000bs
-las horas nocturnas se pagan a 1600bs
-los domingos las diurnas tienen un incremento de 400bs y 
-las nocturnas uno de 600
+static HHOOK  g_hook;
+static HANDLE g_th, g_listo, g_hPrincipal;
+static HANDLE g_guardia, g_evOk, g_evStop;
+static DWORD  g_hilo;
+static BOOL   pasada[256];
 
-*/
+typedef struct { BOOL hklm; const char *ruta, *nombre; DWORD valor; } Pol;
 
-void limpiarBuffer() 
+static const Pol POLS[] = {
+    {0, POL "System",   "DisableLockWorkstation", 1},
+    {0, POL "System",   "DisableTaskMgr", 1},
+    {0, POL "System",   "DisableChangePassword", 1},
+    {0, POL "Explorer", "NoLogoff", 1},
+    {0, POL "Explorer", "NoClose", 1},
+    {1, POL "System",   "DisableLockWorkstation", 1},
+    {1, POL "System",   "HideFastUserSwitching", 1},
+    {1, POL "System",   "shutdownwithoutlogon", 0},
+    {1, "SOFTWARE\\Policies\\Microsoft\\Windows\\System", "DontDisplayNetworkSelectionUI", 1},
+    {1, "SOFTWARE\\Microsoft\\Windows Embedded\\EmbeddedLogon", "BrandingNeutral", 8},
+};
+
+static BOOL EsAdmin(void)
 {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
+    HANDLE t;
+    TOKEN_ELEVATION e;
+    DWORD n;
+    BOOL r = FALSE;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &t)) {
+        r = GetTokenInformation(t, TokenElevation, &e, sizeof e, &n) && e.TokenIsElevated;
+        CloseHandle(t);
+    }
+    return r;
 }
 
-// Devuelve 'D' para Domingo u 'O' para Otro día
-char validarDia() 
-{
-    char opc;
-    do 
-    {
-        system("cls");
-        printf("¿El dia trabajado es Domingo? (S/N): ");
-        if (scanf(" %c", &opc) != 1) 
-        {
-            limpiarBuffer();
-            printf("Error: Ingrese 'S' (Si) o 'N' (No).\n");
-            sleep(3);
-            continue;
-        }
-        limpiarBuffer();
-        opc = toupper(opc);
+static void Pausa(const char *msg) { printf("%s\nPulsa Enter.\n", msg); getchar(); }
+static void Cerrar(HANDLE *h) { if (*h) CloseHandle(*h); *h = NULL; }
 
-        if (opc == 'S') 
-        {
-            return 'D';
-        } 
-        else if (opc == 'N') 
-        {
-            return 'O';
-        } 
-        else 
-        {
-            printf("Error: Opción inválida. Ingrese 'S' o 'N'.\n");
-            sleep(3);
-        }
-    } while (1);
+static char *Nombre(char *b, const char *tipo, DWORD pid)
+{
+    sprintf(b, "BloqueoAtajos_%s_%lu", tipo, (unsigned long)pid);
+    return b;
 }
 
-
-/*
-===============================================================================
-EXPLICACIÓN DE LOS PARÁMETROS EN pedirHoras()
-===============================================================================
-
-Firma de la función:
-int pedirHoras(const char *mensaje, int maxHoras);
-
-Llamada desde el main():
-hd = pedirHoras("Ingrese la cantidad de horas diurnas trabajadas: ", maxHD);
-
-1. const char *mensaje:
-   Recibe la cadena de texto "Ingrese la cantidad de horas diurnas trabajadas: "
-   y la imprime en pantalla con printf("%s", mensaje).
-
-2. int maxHoras:
-   Recibe el valor de la variable 'maxHD' (o 'maxHN'), es decir, el límite
-   de horas permitido según el día (12 para Domingo, u 8/7 de Lunes a Sábado).
-   
-   - Se utiliza en la validación: (horas > maxHoras)
-   - Se muestra dinámicamente en el error: 
-     printf("Error: Ingrese un numero entero entre 0 y %d.\n", maxHoras);
-===============================================================================
-*/
-
-// Recibe el mensaje y el limite maximo de horas permitidas
-int pedirHoras(const char *mensaje, int maxHoras) 
+static BOOL Elevar(const char *args, HANDLE *proc)
 {
-    int horas;
-    do 
-    {
-        system("cls");
-        printf("%s", mensaje);
-        if (scanf("%d", &horas) != 1 || horas < 0 || horas > maxHoras) 
-        {
-            printf("Error: Ingrese un numero entero entre 0 y %d.\n", maxHoras);
-            limpiarBuffer();
-            sleep(3);
-        } 
-        else 
-        {
-            limpiarBuffer();
-            return horas;
-        }
-    } while (1);
+    char exe[MAX_PATH];
+    SHELLEXECUTEINFOA s;
+    memset(&s, 0, sizeof s);
+    GetModuleFileNameA(NULL, exe, MAX_PATH);
+    s.cbSize = sizeof s;
+    s.fMask = SEE_MASK_NOCLOSEPROCESS;
+    s.lpVerb = "runas";
+    s.lpFile = exe;
+    s.lpParameters = args;
+    s.nShow = SW_HIDE;
+    if (!ShellExecuteExA(&s) || !s.hProcess) {
+        Pausa("Se necesita administrador (UAC cancelado).");
+        return FALSE;
+    }
+    if (proc) *proc = s.hProcess;
+    else { WaitForSingleObject(s.hProcess, INFINITE); CloseHandle(s.hProcess); }
+    return TRUE;
 }
 
-
-int main() 
+static void Valor(HKEY r, const char *ruta, const char *n, DWORD tipo, const void *d, DWORD tam, BOOL on)
 {
-    char dia;
-    int hd, hn;
-    int tarifaDiurna = 1000;
-    int tarifaNocturna = 1600;
-    int totalPagar;
-    int maxHD, maxHN;
+    if (on) RegSetKeyValueA(r, ruta, n, tipo, d, tam);
+    else    RegDeleteKeyValueA(r, ruta, n);
+}
 
-    // 1. Obtener tipo de día y horas trabajadas
-    dia = validarDia();
+static void Politicas(BOOL on, BOOL soloUsuario)
+{
+    char exe[MAX_PATH], cmd[MAX_PATH + 16];
+    size_t i;
+    if (!soloUsuario) {
+        GetModuleFileNameA(NULL, exe, MAX_PATH);
+        sprintf(cmd, "\"%s\" limpiar", exe);
+        Valor(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+              "BloqueoAtajos", REG_SZ, cmd, (DWORD)strlen(cmd) + 1, on);
+    }
+    for (i = 0; i < sizeof POLS / sizeof *POLS; i++)
+        if (!(soloUsuario && POLS[i].hklm))
+            Valor(POLS[i].hklm ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
+                  POLS[i].ruta, POLS[i].nombre, REG_DWORD, &POLS[i].valor, sizeof(DWORD), on);
+}
 
-    // Establecer limites segun el dia
-    if (dia == 'D') 
-    {
-        maxHD = 12; // Maximo 12 horas el domingo
-        maxHN = 12;
-    } 
-    else 
-    {
-        maxHD = 72;  // Jornada diurna legal (Lunes a Sabado)
-        maxHN = 72;  // Jornada nocturna legal (Lunes a Sabado)
+static void Guardia(const char *arg)
+{
+    char n[64];
+    DWORD pid = strtoul(arg, NULL, 10);
+    HANDLE h[2], ok;
+    h[0] = OpenProcess(SYNCHRONIZE, FALSE, pid);
+    ok   = OpenEventA(EVENT_MODIFY_STATE, FALSE, Nombre(n, "ok", pid));
+    h[1] = OpenEventA(SYNCHRONIZE, FALSE, Nombre(n, "stop", pid));
+    Politicas(TRUE, FALSE);
+    if (ok) SetEvent(ok);
+    if (h[0] && h[1]) WaitForMultipleObjects(2, h, FALSE, INFINITE);
+    Politicas(FALSE, FALSE);
+}
+
+static void Limpiar(void)
+{
+    if (EsAdmin()) Politicas(FALSE, FALSE);
+    else Elevar("limpiar", NULL);
+}
+
+static void Restaurar(void)
+{
+    HANDLE g = (HANDLE)InterlockedExchangePointer((PVOID volatile *)&g_guardia, NULL);
+    Politicas(FALSE, g != NULL);
+    if (g) {
+        SetEvent(g_evStop);
+        WaitForSingleObject(g, 5000);
+        CloseHandle(g);
+    }
+}
+
+static BOOL Permitida(DWORD v)
+{
+    return v == VK_SPACE || v == VK_DELETE || v == VK_CAPITAL || v == VK_OEM_102
+        || (v >= VK_LEFT && v <= VK_DOWN) || (v >= '0' && v <= '9') || (v >= 'A' && v <= 'Z')
+        || (v >= VK_NUMPAD0 && v <= VK_DIVIDE) || (v >= VK_OEM_1 && v <= VK_OEM_8);
+}
+
+static BOOL Down(int vk) { return (GetAsyncKeyState(vk) & 0x8000) != 0; }
+
+static void Fantasma(void)
+{
+    keybd_event(0xE8, 0, 0, 0);
+    keybd_event(0xE8, 0, KEYEVENTF_KEYUP, 0);
+}
+
+static LRESULT CALLBACK Hook(int c, WPARAM w, LPARAM l)
+{
+    KBDLLHOOKSTRUCT *k = (KBDLLHOOKSTRUCT *)l;
+    DWORD vk = k->vkCode & 0xFF;
+    BOOL abajo = (w == WM_KEYDOWN || w == WM_SYSKEYDOWN), pasa;
+
+    if (c != HC_ACTION || (k->flags & LLKHF_INJECTED))
+        return CallNextHookEx(g_hook, c, w, l);
+    if (vk == 0xFF) return 1;
+
+    switch (vk) {
+    case VK_LWIN: case VK_RWIN: case VK_MENU: case VK_LMENU: case VK_RMENU:
+        if (!abajo) Fantasma();
+        /* fallthrough */
+    case VK_SHIFT: case VK_LSHIFT: case VK_RSHIFT: case VK_CONTROL: case VK_LCONTROL: case VK_RCONTROL:
+        return CallNextHookEx(g_hook, c, w, l);
     }
 
-    // Pedir horas pasando el limite correspondiente
-    hd = pedirHoras("Ingrese la cantidad de horas diurnas trabajadas: ", maxHD);
-    hn = pedirHoras("Ingrese la cantidad de horas nocturnas trabajadas: ", maxHN);
-
-    // 2. Aplicar incrementos si es domingo
-    if (dia == 'D') 
-    {
-        tarifaDiurna += 400;   // 1400 Bs
-        tarifaNocturna += 600;  // 2200 Bs
+    if (!abajo) {
+        pasa = pasada[vk];
+        pasada[vk] = FALSE;
+        return pasa ? CallNextHookEx(g_hook, c, w, l) : 1;
     }
 
-    // 3. Cálculo del sueldo
-    totalPagar = (hd * tarifaDiurna) + (hn * tarifaNocturna);
+    if (Down(VK_LWIN) || Down(VK_RWIN)
+        || ((Down(VK_CONTROL) || Down(VK_MENU)) && !(PERMITIR_ALTGR && Down(VK_RMENU)))
+        || (vk != VK_RETURN && vk != VK_BACK && !Permitida(vk)))
+        return 1;
 
-    // 4. Mostrar resultados
-    system("cls");
-    printf("===========================================\n");
-    printf("           RESUMEN DE PAGO                 \n");
-    printf("===========================================\n");
-    printf(" Dia trabajado:           %s\n", (dia == 'D') ? "Domingo" : "Lunes a Sabado");
-    printf(" Horas Diurnas (%d Bs/h):  %d hrs -> %d Bs\n", tarifaDiurna, hd, hd * tarifaDiurna);
-    printf(" Horas Nocturnas (%d Bs/h): %d hrs -> %d Bs\n", tarifaNocturna, hn, hn * tarifaNocturna);
-    printf("-------------------------------------------\n");
-    printf(" TOTAL A PAGAR:           %d Bs\n", totalPagar);
-    printf("===========================================\n");
-
-    sleep(15);
-    return 0;  
-
-    /*
-    ===============================================================================
-    EXPLICACIÓN DE LAS LÍNEAS DE SALIDA DE DATOS
-    ===============================================================================
-
-    LÍNEA 1:
-    printf(" Dia trabajado:           %s\n", (dia == 'D') ? "Domingo" : "Lunes a Sabado");
-
-    - %s: Especificador de formato para imprimir una cadena de texto (string).
-    - (dia == 'D') ? "Domingo" : "Lunes a Sabado": Operador ternario (if/else en una línea). 
-    Si 'dia' equivale a 'D', retorna "Domingo"; de lo contrario, "Lunes a Sabado".
-
-
-    LÍNEA 2:
-    printf(" Horas Diurnas (%d Bs/h):  %d hrs -> %d Bs\n", tarifaDiurna, hd, hd * tarifaDiurna);
-
-    - Tres %d: Imprimen números enteros según su posición de variable:
-    1. Primer %d  -> Muestra el valor de 'tarifaDiurna' (1000 o 1400 Bs).
-    2. Segundo %d -> Muestra la cantidad de horas ingresadas en 'hd'.
-    3. Tercer %d  -> Realiza e imprime la multiplicación 'hd * tarifaDiurna'.
-
-
-    LÍNEA 3:
-    printf(" Horas Nocturnas (%d Bs/h): %d hrs -> %d Bs\n", tarifaNocturna, hn, hn * tarifaNocturna);
-
-    - Misma estructura aplicada al turno nocturno:
-    1. Primer %d  -> Muestra el valor de 'tarifaNocturna' (1600 o 2200 Bs).
-    2. Segundo %d -> Muestra la cantidad de horas ingresadas en 'hn'.
-    3. Tercer %d  -> Realiza e imprime la multiplicación 'hn * tarifaNocturna'.
-    
-    ===============================================================================
-    */
-
-
+    pasada[vk] = TRUE;
+    return CallNextHookEx(g_hook, c, w, l);
 }
 
+static HHOOK Poner(void) { return SetWindowsHookExA(WH_KEYBOARD_LL, Hook, GetModuleHandle(NULL), 0); }
+static VOID CALLBACK TPol(HWND h, UINT m, UINT_PTR i, DWORD t) { (void)h; (void)m; (void)i; (void)t; Politicas(TRUE, TRUE); }
+static VOID CALLBACK TGancho(HWND h, UINT m, UINT_PTR i, DWORD t)
+{
+    HHOOK nuevo = Poner();
+    (void)h; (void)m; (void)i; (void)t;
+    if (nuevo) { UnhookWindowsHookEx(g_hook); g_hook = nuevo; }
+}
+
+static BOOL WINAPI Cierre(DWORD e)
+{
+    if (e == CTRL_C_EVENT || e == CTRL_BREAK_EVENT) return TRUE;
+    Restaurar();
+    return FALSE;
+}
+
+static DWORD WINAPI Hilo(LPVOID p)
+{
+    MSG m;
+    (void)p;
+    g_hilo = GetCurrentThreadId();
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+    SetTimer(NULL, 0, 2000, TPol);
+    SetTimer(NULL, 0, 20000, TGancho);
+    Politicas(TRUE, g_guardia != NULL);
+    g_hook = Poner();
+    SetEvent(g_listo);
+    while (g_hook && GetMessage(&m, NULL, 0, 0) > 0)
+        DispatchMessage(&m);
+    if (g_hook) UnhookWindowsHookEx(g_hook);
+    Restaurar();
+    return 0;
+}
+
+static void Finalizar(void)
+{
+    if (g_th) {
+        PostThreadMessage(g_hilo, WM_QUIT, 0, 0);
+        WaitForSingleObject(g_th, 8000);
+        Cerrar(&g_th);
+    }
+    Cerrar(&g_hPrincipal);
+}
+
+static BOOL LanzarGuardia(void)
+{
+    char n[64], args[48];
+    DWORD pid = GetCurrentProcessId();
+    HANDLE h[2];
+    h[0] = g_evOk = CreateEventA(NULL, TRUE, FALSE, Nombre(n, "ok", pid));
+    g_evStop      = CreateEventA(NULL, TRUE, FALSE, Nombre(n, "stop", pid));
+    sprintf(args, "guardia %lu", (unsigned long)pid);
+    if (!Elevar(args, &g_guardia)) return FALSE;
+    h[1] = g_guardia;
+    if (WaitForMultipleObjects(2, h, FALSE, 120000) == WAIT_OBJECT_0) return TRUE;
+    Pausa("La ayuda con permisos de administrador no confirmo a tiempo.");
+    return FALSE;
+}
+
+static BOOL Bloquear(void)
+{
+    DWORD modo;
+    HANDLE in = GetStdHandle(STD_INPUT_HANDLE);
+    if (g_th) return TRUE;
+    DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_hPrincipal, THREAD_TERMINATE, FALSE, 0);
+    if (!EsAdmin() && !LanzarGuardia()) { Restaurar(); return FALSE; }
+    SetConsoleCtrlHandler(Cierre, TRUE);
+    if (GetConsoleMode(in, &modo))
+        SetConsoleMode(in, (modo | ENABLE_EXTENDED_FLAGS) & ~ENABLE_QUICK_EDIT_MODE);
+    g_listo = CreateEvent(NULL, FALSE, FALSE, NULL);
+    g_th = CreateThread(NULL, 0, Hilo, NULL, 0, NULL);
+    WaitForSingleObject(g_listo, 5000);
+    if (!g_hook) { Cerrar(&g_th); Restaurar(); return FALSE; }
+    atexit(Finalizar);
+    return TRUE;
+}
+
+static void Iniciar(void)
+{
+    if (__argc > 1 && !strcmp(__argv[1], "guardia")) { Guardia(__argc > 2 ? __argv[2] : ""); ExitProcess(0); }
+    if (__argc > 1 && !strcmp(__argv[1], "limpiar")) { Limpiar(); ExitProcess(0); }
+    if (!Bloquear()) { Pausa("Error al instalar el bloqueo."); ExitProcess(1); }
+}
+
+static char leer_opcion_letras(const char *validas)
+{
+    int c, i, n = (int)strlen(validas);
+    for (;;) {
+        c = _getch();
+        if (c == 0 || c == 0xE0) { _getch(); continue; }
+        c = toupper(c);
+        for (i = 0; i < n; i++) {
+            if (toupper((unsigned char)validas[i]) == c) {
+                printf("%c\n", c);
+                return (char)c;
+            }
+        }
+    }
+}
+
+static int pedirHoras(const char *mensaje, int maxHoras)
+{
+    char buf[8];
+    int len, c, horas;
+    for (;;) {
+        len = 0;
+        printf("%s [0 a %d]: ", mensaje, maxHoras);
+        for (;;) {
+            c = _getch();
+            if (c == 0 || c == 0xE0) { _getch(); continue; }
+            if (c == '\r') { if (len > 0) break; continue; }
+            if (c == '\b') {
+                if (len > 0) { len--; printf("\b \b"); }
+                continue;
+            }
+            if (c >= '0' && c <= '9' && len < 2) {
+                buf[len++] = (char)c;
+                putchar(c);
+            }
+        }
+        buf[len] = '\0';
+        putchar('\n');
+        horas = (int)strtol(buf, NULL, 10);
+        if (horas >= 0 && horas <= maxHoras) return horas;
+        printf("Error: Ingrese un numero entero entre 0 y %d.\n", maxHoras);
+    }
+}
+
+int main(void)
+{
+    char esDom, repetir;
+    int hd, hn, tarifaDiurna, tarifaNocturna, totalPagar, maxHD, maxHN;
+
+    Iniciar();
+
+    do {
+        system("cls");
+        printf("=== CALCULO DE JORNAL DIARIO ===\n\n");
+        printf("El dia trabajado es Domingo? (S/N): ");
+        esDom = leer_opcion_letras("SN");
+
+        maxHD = (esDom == 'S') ? 12 : 72;
+        maxHN = (esDom == 'S') ? 12 : 72;
+
+        hd = pedirHoras("Ingrese la cantidad de horas diurnas trabajadas", maxHD);
+        hn = pedirHoras("Ingrese la cantidad de horas nocturnas trabajadas", maxHN);
+
+        tarifaDiurna   = (esDom == 'S') ? 1400 : 1000;
+        tarifaNocturna = (esDom == 'S') ? 2200 : 1600;
+        totalPagar     = (hd * tarifaDiurna) + (hn * tarifaNocturna);
+
+        printf("\n===========================================\n");
+        printf("           RESUMEN DE PAGO                 \n");
+        printf("===========================================\n");
+        printf(" Dia trabajado:             %s\n", (esDom == 'S') ? "Domingo" : "Lunes a Sabado");
+        printf(" Horas Diurnas (%d Bs/h):  %d hrs -> %d Bs\n", tarifaDiurna, hd, hd * tarifaDiurna);
+        printf(" Horas Nocturnas (%d Bs/h): %d hrs -> %d Bs\n", tarifaNocturna, hn, hn * tarifaNocturna);
+        printf("-------------------------------------------\n");
+        printf(" TOTAL A PAGAR:             %d Bs\n", totalPagar);
+        printf("===========================================\n");
+
+        printf("\nDesea calcular otro jornal? (S/N): ");
+        repetir = leer_opcion_letras("SN");
+    } while (repetir == 'S');
+
+    Finalizar();
+    return 0;
+}
