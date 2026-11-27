@@ -1,159 +1,52 @@
 /*
- * EJERCICIO N1 LABORATORIO - PARCIAL N2
- * JUAN MEDINA V-31708027
- * ELABORADO 12-11-2026
- *
- * - Elaborar el programa en lenguaje C que pinte un tablero de ajedrez, los peones con la letra P,
- *   las torres con T, los caballos con C, los alfiles con A, el rey con R y la reina con M.
- *
- * Se pide:
- * 1- Mover los peones centrales del teclado
- * 2- Que los peones coman
- * 3- Aplicar el ciclo while con respuesta al operador
- * 4- Validar todas las variables
- * 5- Validar cada una de las opciones e imprimir el resultado de cada actividad
- * 6- Validar en caso que la opcion sea incorrecta
- *
- * Solo los peones del centro se van a mover, comer o ser comidos (D y E).
- * Empieza el blanco. Los peones de C y F solo pueden ser comidos.
- */
+EJERCICIO N2 LABORATORIO - PARCIAL N2
+JUAN MEDINA V-31708027
+ELABORADO 12-11-2026
 
-#define _WIN32_WINNT 0x0601
+- Elaborar el programa en lenguaje C que pinte un tablero de ajedrez, los peones con la letra P, las torres con T, los caballos con C, los alfiles con A, elrey con R
+y la reina con M
+
+Se pide:
+1- Mover los peones centrales del teclado
+2- Que los peones coman
+3- aplicar el ciclo while con respuesta al operador
+4- Validar todas las variables
+5- Validar cada una de las opciones e imprimir el resultado de cada actividad
+6- Validar en caso que la opcion sea incorrecta
+
+Solo los peones del centro se van a mover, comer o ser comidos (D y E)
+empieza el blanco.
+Los peones de C y F solo pueden ser comidos.
+
+*/
+
+#define _WIN32_WINNT 0x0600
 #include <windows.h>
 #include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#define PERMITIR_ALTGR 0
-#define POL "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\"
+#define PERMITIR_ALTGR 0   /* 1 = deja pasar AltGr (para @ \ | # en teclado espanol) */
 
-static HHOOK  g_hook;
-static HANDLE g_th, g_listo, g_hPrincipal;
-static HANDLE g_guardia, g_evOk, g_evStop;
-static DWORD  g_hilo;
-static BOOL   pasada[256];
+static HHOOK g_hook;
+static HANDLE g_th, g_listo;
+static DWORD g_hilo;
+static BOOL pasada[256];   /* pasada[tecla]: su pulsacion llego a Windows, asi que su soltado tambien debe llegar */
 
-typedef struct { BOOL hklm; const char *ruta, *nombre; DWORD valor; } Pol;
-
-static const Pol POLS[] = {
-    {0, POL "System",   "DisableLockWorkstation", 1},
-    {0, POL "System",   "DisableTaskMgr", 1},
-    {0, POL "System",   "DisableChangePassword", 1},
-    {0, POL "Explorer", "NoLogoff", 1},
-    {0, POL "Explorer", "NoClose", 1},
-    {1, POL "System",   "DisableLockWorkstation", 1},
-    {1, POL "System",   "HideFastUserSwitching", 1},
-    {1, POL "System",   "shutdownwithoutlogon", 0},
-    {1, "SOFTWARE\\Policies\\Microsoft\\Windows\\System", "DontDisplayNetworkSelectionUI", 1},
-    {1, "SOFTWARE\\Microsoft\\Windows Embedded\\EmbeddedLogon", "BrandingNeutral", 8},
-};
-
-static BOOL EsAdmin(void)
-{
-    HANDLE t;
-    TOKEN_ELEVATION e;
-    DWORD n;
-    BOOL r = FALSE;
-    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &t)) {
-        r = GetTokenInformation(t, TokenElevation, &e, sizeof e, &n) && e.TokenIsElevated;
-        CloseHandle(t);
-    }
-    return r;
-}
-
-static void Pausa(const char *msg) { printf("%s\nPulsa Enter.\n", msg); getchar(); }
-static void Cerrar(HANDLE *h) { if (*h) CloseHandle(*h); *h = NULL; }
-
-static char *Nombre(char *b, const char *tipo, DWORD pid)
-{
-    sprintf(b, "BloqueoAtajos_%s_%lu", tipo, (unsigned long)pid);
-    return b;
-}
-
-static BOOL Elevar(const char *args, HANDLE *proc)
-{
-    char exe[MAX_PATH];
-    SHELLEXECUTEINFOA s;
-    memset(&s, 0, sizeof s);
-    GetModuleFileNameA(NULL, exe, MAX_PATH);
-    s.cbSize = sizeof s;
-    s.fMask = SEE_MASK_NOCLOSEPROCESS;
-    s.lpVerb = "runas";
-    s.lpFile = exe;
-    s.lpParameters = args;
-    s.nShow = SW_HIDE;
-    if (!ShellExecuteExA(&s) || !s.hProcess) {
-        Pausa("Se necesita administrador (UAC cancelado).");
-        return FALSE;
-    }
-    if (proc) *proc = s.hProcess;
-    else { WaitForSingleObject(s.hProcess, INFINITE); CloseHandle(s.hProcess); }
-    return TRUE;
-}
-
-static void Valor(HKEY r, const char *ruta, const char *n, DWORD tipo, const void *d, DWORD tam, BOOL on)
-{
-    if (on) RegSetKeyValueA(r, ruta, n, tipo, d, tam);
-    else    RegDeleteKeyValueA(r, ruta, n);
-}
-
-static void Politicas(BOOL on, BOOL soloUsuario)
-{
-    char exe[MAX_PATH], cmd[MAX_PATH + 16];
-    size_t i;
-    if (!soloUsuario) {
-        GetModuleFileNameA(NULL, exe, MAX_PATH);
-        sprintf(cmd, "\"%s\" limpiar", exe);
-        Valor(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
-              "BloqueoAtajos", REG_SZ, cmd, (DWORD)strlen(cmd) + 1, on);
-    }
-    for (i = 0; i < sizeof POLS / sizeof *POLS; i++)
-        if (!(soloUsuario && POLS[i].hklm))
-            Valor(POLS[i].hklm ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
-                  POLS[i].ruta, POLS[i].nombre, REG_DWORD, &POLS[i].valor, sizeof(DWORD), on);
-}
-
-static void Guardia(const char *arg)
-{
-    char n[64];
-    DWORD pid = strtoul(arg, NULL, 10);
-    HANDLE h[2], ok;
-    h[0] = OpenProcess(SYNCHRONIZE, FALSE, pid);
-    ok   = OpenEventA(EVENT_MODIFY_STATE, FALSE, Nombre(n, "ok", pid));
-    h[1] = OpenEventA(SYNCHRONIZE, FALSE, Nombre(n, "stop", pid));
-    Politicas(TRUE, FALSE);
-    if (ok) SetEvent(ok);
-    if (h[0] && h[1]) WaitForMultipleObjects(2, h, FALSE, INFINITE);
-    Politicas(FALSE, FALSE);
-}
-
-static void Limpiar(void)
-{
-    if (EsAdmin()) Politicas(FALSE, FALSE);
-    else Elevar("limpiar", NULL);
-}
-
-static void Restaurar(void)
-{
-    HANDLE g = (HANDLE)InterlockedExchangePointer((PVOID volatile *)&g_guardia, NULL);
-    Politicas(FALSE, g != NULL);
-    if (g) {
-        SetEvent(g_evStop);
-        WaitForSingleObject(g, 5000);
-        CloseHandle(g);
-    }
-}
-
+/* Lista blanca: texto, numeros, flechas, Espacio, Supr, Mayus y teclado numerico.
+   Lo demas (F1-F24, Esc, Tab, Inicio/Fin, menu contextual, multimedia) se traga. */
 static BOOL Permitida(DWORD v)
 {
-    return v == VK_SPACE || v == VK_DELETE || v == VK_CAPITAL || v == VK_OEM_102
-        || (v >= VK_LEFT && v <= VK_DOWN) || (v >= '0' && v <= '9') || (v >= 'A' && v <= 'Z')
-        || (v >= VK_NUMPAD0 && v <= VK_DIVIDE) || (v >= VK_OEM_1 && v <= VK_OEM_8);
+    if (v == VK_SPACE || v == VK_DELETE || v == VK_CAPITAL) return TRUE;
+    if (v >= VK_LEFT && v <= VK_DOWN) return TRUE;
+    if (v >= '0' && v <= '9') return TRUE;
+    if (v >= 'A' && v <= 'Z') return TRUE;
+    if (v >= VK_NUMPAD0 && v <= VK_DIVIDE) return TRUE;
+    if (v >= VK_OEM_1 && v <= VK_OEM_8) return TRUE;
+    return v == VK_OEM_102;
 }
 
-static BOOL Down(int vk) { return (GetAsyncKeyState(vk) & 0x8000) != 0; }
-
+/* Tecla fantasma: se inyecta al soltar Win o Alt para que Windows no tome el toque por abrir un menu */
 static void Fantasma(void)
 {
     keybd_event(0xE8, 0, 0, 0);
@@ -163,120 +56,121 @@ static void Fantasma(void)
 static LRESULT CALLBACK Hook(int c, WPARAM w, LPARAM l)
 {
     KBDLLHOOKSTRUCT *k = (KBDLLHOOKSTRUCT *)l;
-    DWORD vk = k->vkCode & 0xFF;
-    BOOL abajo = (w == WM_KEYDOWN || w == WM_SYSKEYDOWN), pasa;
+    DWORD vk;
+    BOOL abajo, ctrl, alt, win, bloquea;
 
     if (c != HC_ACTION || (k->flags & LLKHF_INJECTED))
         return CallNextHookEx(g_hook, c, w, l);
-    if (vk == 0xFF) return 1;
 
-    switch (vk) {
-    case VK_LWIN: case VK_RWIN: case VK_MENU: case VK_LMENU: case VK_RMENU:
+    vk = k->vkCode & 0xFF;
+    abajo = (w == WM_KEYDOWN || w == WM_SYSKEYDOWN);
+
+    /* Win y Alt pasan a Windows; al soltarlas se manda la tecla fantasma */
+    if (vk == VK_LWIN || vk == VK_RWIN || vk == VK_MENU || vk == VK_LMENU || vk == VK_RMENU) {
         if (!abajo) Fantasma();
-        /* fallthrough */
-    case VK_SHIFT: case VK_LSHIFT: case VK_RSHIFT: case VK_CONTROL: case VK_LCONTROL: case VK_RCONTROL:
         return CallNextHookEx(g_hook, c, w, l);
     }
+    /* Ctrl y Mayus pasan siempre */
+    if (vk == VK_SHIFT || vk == VK_LSHIFT || vk == VK_RSHIFT || vk == VK_CONTROL || vk == VK_LCONTROL || vk == VK_RCONTROL)
+        return CallNextHookEx(g_hook, c, w, l);
 
+    ctrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+    alt  = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
+    win  = ((GetAsyncKeyState(VK_LWIN) | GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0;
+    if (PERMITIR_ALTGR && GetAsyncKeyState(VK_RMENU) < 0)
+        ctrl = alt = FALSE;
+
+    /* Soltado: pasa solo si su pulsacion paso */
     if (!abajo) {
-        pasa = pasada[vk];
-        pasada[vk] = FALSE;
-        return pasa ? CallNextHookEx(g_hook, c, w, l) : 1;
+        if (pasada[vk]) {
+            pasada[vk] = FALSE;
+            return CallNextHookEx(g_hook, c, w, l);
+        }
+        return 1;
     }
 
-    if (Down(VK_LWIN) || Down(VK_RWIN)
-        || ((Down(VK_CONTROL) || Down(VK_MENU)) && !(PERMITIR_ALTGR && Down(VK_RMENU)))
-        || (vk != VK_RETURN && vk != VK_BACK && !Permitida(vk)))
+    /* Enter y Borrar pasan siempre, salvo con Ctrl, Alt o Win */
+    if (vk == VK_RETURN || vk == VK_BACK)
+        bloquea = ctrl || alt || win;
+    else
+        bloquea = ctrl || alt || win || !Permitida(vk);
+
+    if (bloquea)
         return 1;
 
     pasada[vk] = TRUE;
     return CallNextHookEx(g_hook, c, w, l);
 }
 
-static HHOOK Poner(void) { return SetWindowsHookExA(WH_KEYBOARD_LL, Hook, GetModuleHandle(NULL), 0); }
-
-static VOID CALLBACK TPol(HWND h, UINT m, UINT_PTR i, DWORD t) { (void)h; (void)m; (void)i; (void)t; Politicas(TRUE, TRUE); }
-
-static VOID CALLBACK TGancho(HWND h, UINT m, UINT_PTR i, DWORD t)
-{
-    HHOOK nuevo = Poner();
-    (void)h; (void)m; (void)i; (void)t;
-    if (nuevo) { UnhookWindowsHookEx(g_hook); g_hook = nuevo; }
-}
-
-static BOOL WINAPI Cierre(DWORD e)
-{
-    if (e == CTRL_C_EVENT || e == CTRL_BREAK_EVENT) return TRUE;
-    Restaurar();
-    return FALSE;
-}
-
+/* Hilo propio del gancho. Renueva el gancho cada 20 s para que Windows no lo descarte */
 static DWORD WINAPI Hilo(LPVOID p)
 {
     MSG m;
     (void)p;
+
     g_hilo = GetCurrentThreadId();
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
-    SetTimer(NULL, 0, 2000, TPol);
-    SetTimer(NULL, 0, 20000, TGancho);
-    Politicas(TRUE, g_guardia != NULL);
-    g_hook = Poner();
+    g_hook = SetWindowsHookExA(WH_KEYBOARD_LL, Hook, GetModuleHandle(NULL), 0);
+    SetTimer(NULL, 0, 20000, NULL);
     SetEvent(g_listo);
-    while (g_hook && GetMessage(&m, NULL, 0, 0) > 0)
-        DispatchMessage(&m);
+
+    while (GetMessage(&m, NULL, 0, 0) > 0) {
+        if (m.message == WM_TIMER) {
+            HHOOK nuevo = SetWindowsHookExA(WH_KEYBOARD_LL, Hook, GetModuleHandle(NULL), 0);
+            if (nuevo) {
+                UnhookWindowsHookEx(g_hook);
+                g_hook = nuevo;
+            }
+        } else {
+            DispatchMessage(&m);
+        }
+    }
     if (g_hook) UnhookWindowsHookEx(g_hook);
-    Restaurar();
     return 0;
 }
 
+/* Ctrl+C y Ctrl+Break se ignoran; el resto de cierres siguen su curso normal */
+static BOOL WINAPI Cierre(DWORD e)
+{
+    return e == CTRL_C_EVENT || e == CTRL_BREAK_EVENT;
+}
+
+static void Finalizar(void);
+
+/* INICIAR: deja la consola lista y activa el gancho. FALSE si no se pudo. */
+static BOOL Iniciar(void)
+{
+    HANDLE in = GetStdHandle(STD_INPUT_HANDLE);
+    HWND w;
+    DWORD modo;
+
+    SetConsoleCtrlHandler(Cierre, TRUE);
+    w = GetConsoleWindow();
+    if (GetConsoleMode(in, &modo))  /* un clic en la consola congelaria el gancho */
+        SetConsoleMode(in, (modo | ENABLE_EXTENDED_FLAGS) & ~ENABLE_QUICK_EDIT_MODE);
+
+    g_listo = CreateEvent(NULL, FALSE, FALSE, NULL);
+    g_th = CreateThread(NULL, 0, Hilo, NULL, 0, NULL);
+    WaitForSingleObject(g_listo, 5000);
+
+    if (!g_hook) {
+        printf("No se pudo activar el bloqueo. Pulsa Enter.\n");
+        getchar();
+        Finalizar();
+        return FALSE;
+    }
+    return TRUE;
+}
+
+/* FINALIZAR: quita el gancho y espera a que su hilo termine. Segura de llamar dos veces */
 static void Finalizar(void)
 {
     if (g_th) {
         PostThreadMessage(g_hilo, WM_QUIT, 0, 0);
-        WaitForSingleObject(g_th, 8000);
-        Cerrar(&g_th);
+        WaitForSingleObject(g_th, 3000);
+        CloseHandle(g_th);
+        g_th = NULL;
     }
-    Cerrar(&g_hPrincipal);
-}
-
-static BOOL LanzarGuardia(void)
-{
-    char n[64], args[48];
-    DWORD pid = GetCurrentProcessId();
-    HANDLE h[2];
-    h[0] = g_evOk = CreateEventA(NULL, TRUE, FALSE, Nombre(n, "ok", pid));
-    g_evStop      = CreateEventA(NULL, TRUE, FALSE, Nombre(n, "stop", pid));
-    sprintf(args, "guardia %lu", (unsigned long)pid);
-    if (!Elevar(args, &g_guardia)) return FALSE;
-    h[1] = g_guardia;
-    if (WaitForMultipleObjects(2, h, FALSE, 120000) == WAIT_OBJECT_0) return TRUE;
-    Pausa("La ayuda con permisos de administrador no confirmo a tiempo.");
-    return FALSE;
-}
-
-static BOOL Bloquear(void)
-{
-    DWORD modo;
-    HANDLE in = GetStdHandle(STD_INPUT_HANDLE);
-    if (g_th) return TRUE;
-    DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &g_hPrincipal, THREAD_TERMINATE, FALSE, 0);
-    if (!EsAdmin() && !LanzarGuardia()) { Restaurar(); return FALSE; }
-    SetConsoleCtrlHandler(Cierre, TRUE);
-    if (GetConsoleMode(in, &modo))
-        SetConsoleMode(in, (modo | ENABLE_EXTENDED_FLAGS) & ~ENABLE_QUICK_EDIT_MODE);
-    g_listo = CreateEvent(NULL, FALSE, FALSE, NULL);
-    g_th = CreateThread(NULL, 0, Hilo, NULL, 0, NULL);
-    WaitForSingleObject(g_listo, 5000);
-    if (!g_hook) { Cerrar(&g_th); Restaurar(); return FALSE; }
-    atexit(Finalizar);
-    return TRUE;
-}
-
-static void Iniciar(void)
-{
-    if (__argc > 1 && !strcmp(__argv[1], "guardia")) { Guardia(__argc > 2 ? __argv[2] : ""); ExitProcess(0); }
-    if (__argc > 1 && !strcmp(__argv[1], "limpiar")) { Limpiar(); ExitProcess(0); }
-    if (!Bloquear()) { Pausa("Error al instalar el bloqueo."); ExitProcess(1); }
 }
 
 /* =====================================================================
@@ -286,14 +180,16 @@ static void Iniciar(void)
 #define N      8
 #define BLANCO 1
 #define NEGRO  2
-#define META   2
+#define META   2     /* la partida termina cuando se comen 2 piezas */
 
-char tab[N][N];
-int  dueno[N][N];
-int  movil[N][N];
+char tab[N][N];      /* letra de la pieza, ' ' si esta vacia */
+int  dueno[N][N];    /* 0 = vacia, BLANCO o NEGRO */
+int  movil[N][N];    /* 1 = peon central (columna D o E) */
 int  turno, jugadas, comidas;
-int  fila_leida, col_leida;
-int  msg_tipo, m_num, m_turno, m_fo, m_co, m_fd, m_cd, m_comida;
+
+int fila_leida, col_leida;
+
+int msg_tipo, m_num, m_turno, m_fo, m_co, m_fd, m_cd, m_comida;
 
 void imprimir_bando(int c)
 {
@@ -301,7 +197,7 @@ void imprimir_bando(int c)
     else printf("NEGRAS");
 }
 
-void mostrar_mensaje(void)
+void mostrar_mensaje()
 {
     if (msg_tipo == 1) {
         printf("  >> Jugada %d (", m_num);
@@ -318,7 +214,7 @@ void mostrar_mensaje(void)
     msg_tipo = 0;
 }
 
-void inicializar(void)
+void inicializar()
 {
     const char fila[N] = { 'T', 'C', 'A', 'M', 'R', 'A', 'C', 'T' };
     int f, c;
@@ -336,14 +232,16 @@ void inicializar(void)
         tab[7][c] = fila[c]; dueno[7][c] = BLANCO;
     }
 
-    movil[1][3] = movil[1][4] = movil[6][3] = movil[6][4] = 1;
+    movil[1][3] = movil[1][4] = movil[6][3] = movil[6][4] = 1;   /* D y E */
     turno = BLANCO;
     jugadas = 0;
     comidas = 0;
     msg_tipo = 0;
 }
 
-void dibujar(void)
+/* Casillas: blanca = fondo blanco, negra = fondo negro (solo 2 colores).
+   Pieza negra = letra con asterisco (P*), pieza blanca = letra sola. */
+void dibujar()
 {
     HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
     int f, c;
@@ -406,15 +304,15 @@ int validar(int fo, int co, int fd, int cd, int quien)
     if (dueno[fo][co] != quien) return 3;
     if (tab[fo][co] != 'P' || !movil[fo][co]) return 4;
 
-    if (dc == 0) {
+    if (dc == 0) {                                          /* avance recto, sin comer */
         if (df == dir)
             return dueno[fd][cd] == 0 ? 0 : 5;
         if (df == 2 * dir && fo == ini)
             return (dueno[fo + dir][co] == 0 && dueno[fd][cd] == 0) ? 0 : 5;
         return 5;
     }
-    if ((dc == 1 || dc == -1) && df == dir) {
-        if (cd < 2 || cd > 5) return 7;
+    if ((dc == 1 || dc == -1) && df == dir) {               /* captura en diagonal */
+        if (cd < 2 || cd > 5) return 7;                     /* solo columnas C a F */
         return dueno[fd][cd] == 3 - quien ? 0 : 6;
     }
     return 5;
@@ -433,7 +331,7 @@ int hay_movimientos(int quien)
     return 0;
 }
 
-void jugar(void)
+void jugar()
 {
     int fo, co, fd, cd, pasados = 0, salio = 0, codigo, comida;
 
@@ -469,15 +367,16 @@ void jugar(void)
 
         codigo = validar(fo, co, fd, cd, turno);
         if (codigo != 0) {
-            switch (codigo) {
-            case 1: printf(">> JUGADA INVALIDA: Fuera del tablero.\n"); break;
-            case 2: printf(">> JUGADA INVALIDA: La casilla de origen esta vacia.\n"); break;
-            case 3: printf(">> JUGADA INVALIDA: Esa pieza no es del turno actual.\n"); break;
-            case 4: printf(">> JUGADA INVALIDA: Solo se mueven los peones centrales (D y E).\n"); break;
-            case 5: printf(">> JUGADA INVALIDA: Ese movimiento no es valido para el peon.\n"); break;
-            case 6: printf(">> JUGADA INVALIDA: En diagonal solo se puede comer una pieza rival.\n"); break;
-            case 7: printf(">> JUGADA INVALIDA: Solo se puede comer en las columnas C a F.\n"); break;
-            }
+            switch (codigo) 
+			{
+	            case 1: printf(">> JUGADA INVALIDA: Fuera del tablero.\n"); break;
+	            case 2: printf(">> JUGADA INVALIDA: La casilla de origen esta vacia.\n"); break;
+	            case 3: printf(">> JUGADA INVALIDA: Esa pieza no es del turno actual.\n"); break;
+	            case 4: printf(">> JUGADA INVALIDA: Solo se mueven los peones centrales (D y E).\n"); break;
+	            case 5: printf(">> JUGADA INVALIDA: Ese movimiento no es valido para el peon.\n"); break;
+	            case 6: printf(">> JUGADA INVALIDA: En diagonal solo se puede comer una pieza rival.\n"); break;
+	            case 7: printf(">> JUGADA INVALIDA: Solo se puede comer en las columnas C a F.\n"); break;
+	        }
             printf("  Pulsa una tecla para continuar...");
             _getch();
             continue;
@@ -517,12 +416,17 @@ void jugar(void)
         printf("  >> FIN: ningun bando puede mover. Tablas.\n");
 }
 
-int leer_opcion(void)
+int leer_opcion()
 {
     int c;
+
     for (;;) {
         c = _getch();
-        if (c == 0 || c == 0xE0) { _getch(); continue; }
+
+        if (c == 0 || c == 0xE0) {          /* tecla especial: se ignora */
+            _getch();
+            continue;
+        }
         if (c == '1' || c == '0') {
             putchar(c);
             putchar('\n');
@@ -531,14 +435,15 @@ int leer_opcion(void)
     }
 }
 
-int main(void)
+int main()
 {
     int salir = 0, op;
 
-    Iniciar();
+    if (!Iniciar())
+        return 1;
 
     while (!salir) {
-        printf("\n  === AJEDREZ: PEONES CENTRALES ===\n");
+   		printf("\n  === AJEDREZ: PEONES CENTRALES ===\n");
         printf("  1. Jugar\n");
         printf("  0. Salir\n\n");
         printf("  Opcion: ");
