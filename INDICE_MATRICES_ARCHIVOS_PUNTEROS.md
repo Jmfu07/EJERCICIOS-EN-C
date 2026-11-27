@@ -21,8 +21,8 @@ Este documento reúne **todos** los ejercicios del repositorio correspondientes 
 ### Otros ejercicios con manejo de archivos en el repositorio (4 ejercicios)
 11. `LENGUAJES/LENGUAJES DE PROGRAMACION ARCHIVOS.c` — Fusión AND/OR/XOR de dos ficheros de enteros con validación y bloqueo Win32 (`a.txt`, `b.txt`, `c.txt`).
 12. `GUIA DE EJERCICIOS 14/03_manejo_archivos_texto.c` — Lectura a arreglo dinámico `char **`, escritura, conteo de líneas y búsqueda de palabras.
-13. `GUIA DE EJERCICIOS 7/08_laberinto_backtracking.c` — Carga/generación de laberinto desde `laberinto.txt` y resolución con backtracking.
-14. `GUIA DE EJERCICIOS 4/N6/notade20alumnosmodificables.c` — Gestión de 20 alumnos con exportación de tabla formateada a `alumnos.txt`.
+13. `GUIA DE EJERCICIOS 07/08_laberinto_backtracking.c` — Carga/generación de laberinto desde `laberinto.txt` y resolución con backtracking.
+14. `GUIA DE EJERCICIOS 04/N6/notade20alumnosmodificables.c` — Gestión de 20 alumnos con exportación de tabla formateada a `alumnos.txt`.
 
 ---
 
@@ -57,7 +57,7 @@ Este documento reúne **todos** los ejercicios del repositorio correspondientes 
 22. `07_lista_enlazada_simple.c` — Lista enlazada simple con `Nodo *`.
 23. `08_arbol_binario_busqueda.c` — Árbol binario de búsqueda (ABB) recursivo con punteros.
 
-### `GUIA DE EJERCICIOS 7/` — Proyectos avanzados con punteros y matrices dinámicas (12 ejercicios)
+### `GUIA DE EJERCICIOS 07/` — Proyectos avanzados con punteros y matrices dinámicas (12 ejercicios)
 24. `01_compresor_matrices_recursivo.c`
 25. `02_rotacion_multinivel_anillos.c`
 26. `03_arbol_decisiones_matriz.c`
@@ -101,10 +101,10 @@ Este documento reúne **todos** los ejercicios del repositorio correspondientes 
 19. `19_contar_letras.c`
 20. `20_array_3d_ventas_oficinas.c` *(array tridimensional `6×10×2`)*
 
-### `GUIA DE EJERCICIOS 4/` (19 ejercicios — con validaciones `_getch` y bloqueo Win32)
+### `GUIA DE EJERCICIOS 04/` (19 ejercicios — con validaciones `_getch` y bloqueo Win32)
 21. `N1/5numsporteclado.c` a `N19/contarletrasrepetidas.c` (19 archivos, equivalentes a los 19 ejercicios de `ejercicios de matrices.pdf`).
 
-### `GUIA DE EJERCICIOS 5/` (9 ejercicios — `ejercicios matriecs 2.pdf`)
+### `GUIA DE EJERCICIOS 05/` (9 ejercicios — `ejercicios matriecs 2.pdf`)
 40. `01_operaciones_10_numeros.c`
 41. `02_ordenar_positivos_negativos.c`
 42. `03_tablero_ajedrez.c`
@@ -115,13 +115,13 @@ Este documento reúne **todos** los ejercicios del repositorio correspondientes 
 47. `08_cadena_al_reves.c`
 48. `09_contar_vocales_cadena.c`
 
-### `GUIA DE EJERCICIOS 6/` — Bloque de Matrices (32 ejercicios)
+### `GUIA DE EJERCICIOS 06/` — Bloque de Matrices (32 ejercicios)
 49–72. `34_matriz_3x3_azar.c` hasta `57_operaciones_matriz_A_vector_X.c` (24 ejercicios: matrices al azar, vocales, sumatorias, promedios, máx/mín y posiciones, producto escalar, suma de matrices, diagonales, bordes, filas impares, columnas pares, descomposición en vectores, transpuesta y álgebra `A`/`B`/`X`).
 73–80. `F14_matriz_4x4_dado_filas_impares.c` hasta `F21_menu_escalar_matriz_5x5.c` (8 ejercicios modulares con menús sobre matrices).
 
 ### Otras guías con ejercicios de matrices (20 ejercicios)
-81–92. `GUIA DE EJERCICIOS 7/` (`01` a `12`, matrices dinámicas avanzadas).
+81–92. `GUIA DE EJERCICIOS 07/` (`01` a `12`, matrices dinámicas avanzadas).
 93–97. `GUIA DE EJERCICIOS 10/` (`01` a `05`, matrices dinámicas con punteros).
-98. `GUIA DE EJERCICIOS 8/15_suma_matriz.c` (suma recursiva de matriz).
+98. `GUIA DE EJERCICIOS 08/15_suma_matriz.c` (suma recursiva de matriz).
 99. `GUIA DE EJERCICIOS 12/21_matriz_4x4_transpuesta_diagonal.c` (matriz 4×4, transpuesta y diagonal).
 100. `GUIA DE EJERCICIOS 17 - PUNTEROS/06_matriz_dinamica_doble_puntero.c` (matriz dinámica `int **`).
