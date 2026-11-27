@@ -1,76 +1,65 @@
-# Repositorio de Ejercicios y Guías Resueltas en C
+# Ejercicios en C
 
-Colección organizada de ejercicios, prácticas, parciales y plantillas de validación en **Lenguaje C**, lista para compilar y ejecutar en **Visual Studio Code (MSYS2 / TDM-GCC)** y **Dev-C++**.
+Repositorio donde voy guardando todas las guías, prácticas de clase, parciales y plantillas de validación que he hecho en **C** (Lenguaje de Programación / Laboratorio).
 
-Cada guía incluye sus ejercicios resueltos (`.c` y `.exe`) junto con su **PDF original de enunciados** dentro de la misma carpeta.
+**Contador actual:** `308` ejercicios resueltos (`310` archivos `.c` contando las 2 plantillas de validación).  
+*(Nota: cada vez que agregue un ejercicio nuevo, actualizar este contador y la fila de su carpeta).*
 
-> **Índice temático rápido:** consulta [`INDICE_MATRICES_ARCHIVOS_PUNTEROS.md`](INDICE_MATRICES_ARCHIVOS_PUNTEROS.md) para ver listados en un solo lugar todos los ejercicios de **Matrices (100)**, **Archivos (14)** y **Punteros (37)**.
-
----
-
-## 1. Plantillas de Validación y Bloqueo de Teclado (`PLANTILLAS_VALIDACIONES/`)
-
-| Archivo | Descripción |
-|---|---|
-| `PLANTILLA_VALIDACIONES.c` | **Plantilla maestra unificada (sin `struct`)**: combina el bloqueo de atajos de Windows (`Win+L`, `Ctrl+Alt+Supr`, `Alt+Tab`, `Alt+F4`, `Ctrl+C/V/X`, `F1–F24`, `Esc`, `QuickEdit`) ejecutándose en una **sola consola**, con soporte para símbolos y `AltGr` (`PERMITIR_ALTGR 1`) y restauración automática al cerrar. Incluye un motor unificado tecla por tecla (`_getch`) con límites configurables mediante `#define` (`MAX_ENT_POS`, `MAX_ENT_NEG`, `MAX_ENT`, `MAX_DEC_POS`, `MAX_DEC_NEG`, `MAX_DEC`, `MAX_LETRAS`, `MAX_TEXTO`, `MAX_CUALQ`) donde `-`, `.` y `,` **no cuentan como dígito**, además de validación de rangos y menús instantáneos sin Enter (`leer_opcion_num`, `leer_opcion_letra`, `desea_repetir`). |
-| `VALIDACIONDETECLADOSIMPLE.c` | **Bloqueo ligero en modo usuario**: bloquea atajos de teclado (`Alt+Tab`, `Alt+F4`, tecla `Win`, `Ctrl+C/V/X`, `Esc`, `F1–F24`) sin modificar el registro de Windows ni solicitar permisos de administrador. |
+Si buscas directamente ejercicios de **matrices**, **archivos** o **punteros**, aquí tienes el listado agrupado por tema: [INDICE_MATRICES_ARCHIVOS_PUNTEROS.md](INDICE_MATRICES_ARCHIVOS_PUNTEROS.md).
 
 ---
 
-## 2. Entorno Portable para VS Code (`.vscode/`)
+## Cómo compilar y ejecutar en VS Code
 
-El repositorio se **auto-configura al abrir la carpeta en cualquier PC** con Visual Studio Code:
+La carpeta `.vscode/` está configurada para que funcione en cualquier PC sin andar cambiando rutas a mano:
 
-- **Detección automática (`.vscode/auto_config.ps1` + `.vscode/compilar.cmd`):** busca automáticamente **MSYS2** (`ucrt64`/`mingw64`), **TDM-GCC** (incluido Dev-C++) y `gdb.exe` en este orden:
-  1. Carpeta portable local `tools/msys2` o `tools/tdm-gcc` (ideal para llevar compiladores en USB; `tools/` está ignorado en `.gitignore`).
-  2. Rutas estándar de Windows (`C:\LENGUAJES\`, `C:\msys64\`, `C:\TDM-GCC-64\`, `Dev-Cpp`).
-  3. El `PATH` del sistema.
-- **Perfiles F5 en Consola Externa (`.vscode/launch.json`):** abre cualquier `.c` en cualquier subcarpeta, elige el perfil en *Run & Debug* (`Ctrl+Shift+D`) y pulsa **F5**:
-  - `Ejecutar (Auto - Consola Externa)` *(MSYS2 si existe, si no TDM-GCC, si no `PATH`)*.
-  - `Ejecutar con MSYS2 (Consola Externa)`.
-  - `Ejecutar con TDM-GCC (Consola Externa)`.
-- **Tarea sin GDB (`.vscode/tasks.json`):** `Ejecutar en Consola Externa (Sin GDB)` para PCs que solo tengan `gcc` instalado.
-- **Configuración manual / instalación asistida:** ejecuta `.vscode/auto_config.cmd` si deseas reconfigurar o instalar MSYS2 vía `winget`.
-
----
-
-## 3. Guías y Carpetas del Repositorio
-
-### Guías Numeradas (`GUIA DE EJERCICIOS 01` a `17`)
-
-| Carpeta | `.c` | PDF / Guía en carpeta | De qué trata |
-|---|---:|---|---|
-| `GUIA DE EJERCICIOS 01/` | 5 | `ejercicios 1.pdf` | Condicionales y ciclos con menú: elecciones municipales (Pedro/María/Juan y nulos), cuenta corriente BFC con clave (dos variantes), selección de atletas de maratón y cálculo de jornal diario (diurno/nocturno y domingos). |
-| `GUIA DE EJERCICIOS 02/` | 10 | `ejercicios 2.pdf` | Selección y cálculos prácticos: área de triángulo, oferta por docenas con descuento y obsequios, IMC, salario con horas extras (+50 %), días transcurridos en 2013, par/impar, clasificación de ángulos, tipos de triángulo, calificaciones (0–10) y días del mes con año bisiesto. |
-| `GUIA DE EJERCICIOS 03/` | 12 | `ejercicios 3.pdf` | Elementos básicos de C: variables, tipos de datos, operadores aritméticos y relacionales, cálculo de edad, interés simple/compuesto, área de triángulo rectángulo, perímetro, división/módulo, segundos a minutos, intercambio de variables y conversión de divisas. |
-| `GUIA DE EJERCICIOS 04/` | 19 | `ejercicios de matrices.pdf` | Vectores y matrices (N1–N19) con validaciones tecla por tecla: multiplicación y ordenamiento de arreglos, tablero de ajedrez, gestión de notas de 20 alumnos (con archivo), cursos/asignaturas, conteo de primos, diagonales 20×20, pares/impares, vendedores 18×10, reserva de asientos 25×4 y frecuencia de letras. |
-| `GUIA DE EJERCICIOS 05/` | 9 | `ejercicios matriecs 2.pdf` | Práctica de arreglos, matrices 2D y cadenas: operaciones numéricas sobre vectores, ordenamiento, tablero de ajedrez, matriz transpuesta, conteo de vocales e inversión de cadenas. |
-| `GUIA DE EJERCICIOS 06/` | 55 | `ejercicios que pedira en clases ... algunos.pdf` | Guía extensa para elaborar en clase dividida en 4 bloques: matrices y álgebra matricial (`34`–`57`), programación modular con funciones y menús (`F1`–`F21`), recursividad (`R23`–`R26`) y estructuras de datos (`E27`–`E34`: países, tablas `f(x)` y triángulos). |
-| `GUIA DE EJERCICIOS 07/` | 12 | `ejecricios en c avanzados.pdf` | Proyectos avanzados integrando punteros, memoria dinámica, recursividad y matrices: compresión RLE recursiva, rotación de anillos, árbol de decisiones, permutaciones con restricciones, evaluador de expresiones con matriz de tokens, simulación de ecosistema, ortogonalidad, laberinto con backtracking, determinantes, mapa de calor y cifrado zigzag. |
-| `GUIA DE EJERCICIOS 08/` | 20 | `Ejercicios de Recursividad.pdf` | 20 ejercicios dedicados a recursividad: factorial, Fibonacci, suma de dígitos, inversión de cadenas, palíndromos, búsqueda binaria, combinaciones binarias, Torres de Hanói, vocales, decimal a binario, MCD, primos, matriz recursiva, multiplicación sin `*`, potencia y evaluación de expresiones. |
-| `GUIA DE EJERCICIOS 09/` | 12 | `Ejercicios de Switch y funciones en lenguaje C.pdf` | Programación modular con `switch` y funciones: intervalos, divisores, ternas pitagóricas, serie de Taylor (`e^x`), valor absoluto, promoción de películas, calificaciones, conjetura de Collatz, juego Craps, menú de funciones, MCD recursivo y función de Ackermann. |
-| `GUIA DE EJERCICIOS 10/` | 5 | `Ejercicios de punteros con funciones y matrices (5).pdf` | Matrices dinámicas manipuladas exclusivamente con aritmética de punteros y punteros a funciones: suma recursiva de diagonales, búsqueda en matrices, recorrido recursivo de caminos, operaciones elemento a elemento con callbacks y conteo recursivo de primos. |
-| `GUIA DE EJERCICIOS 11/` | 20 | `Ejercicios de Estructuras Secuenciales.pdf` | Estructuras secuenciales: fórmulas geométricas (círculo, triángulo, rectángulo, cilindro), sueldos, promedios, conversión de mayúsculas/minúsculas y cadena a entero/largo, redondeo (`ceil`/`floor`), llamadas telefónicas, conversión cm→pies/pulgadas, Celsius→Fahrenheit, recibo de sueldo y desplazamiento de carácter en consola. |
-| `GUIA DE EJERCICIOS 12/` | 20 | `Ejercicios Lenguaje C (No resueltos. Prog I).pdf` | Progresión I completa: desde aritmética básica, códigos ASCII, formato numérico vertical y fecha de Pascua (algoritmo Gregoriano completo), hasta menús, ciclos `while`/centinela, estadísticas de empleados, notas ponderadas, banco, elecciones, vectores de alumnos y matriz 4×4 transpuesta. |
-| `GUIA DE EJERCICIOS 13/` | 44 | `47 Ejercicio de Lenguaje C (No Resueltos).pdf`, `Ejercicios de Estructuras de Selección y de Repetición (Guia 1).pdf` | 47 ejercicios de selección y repetición: condicionales, series numéricas, primos, tablas, cálculos estadísticos (lluvias, empleados, alumnos, clubes, concursos), triángulos, año bisiesto, menú de 4 operaciones básicas y fecha de Pascua. |
-| `GUIA DE EJERCICIOS 14/` | 8 | `Ejercicios Varios de Lenguaje C.pdf` | Estructuras de datos y temas intermedios/avanzados: arreglos con punteros, estructuras con punteros, lectura/escritura/búsqueda dinámica en archivos de texto, recursividad/ordenamiento/búsqueda, memoria dinámica segura, listas enlazadas simples y árboles binarios de búsqueda (ABB). |
-| `GUIA DE EJERCICIOS 15 - MATRICES/` | 20 | `Ejercicios de Matrices en Lenguaje C sin Resolver.pdf`, `rrays arreglos multidimensionales en C.pdf` | **Matrices y Arreglos Multidimensionales**: 19 ejercicios de arreglos 1D/2D/3D (versión ligera sin bloqueo Win32) + ejercicio 20 de arreglo tridimensional `6×10×2` de ventas por empleado/oficina/edificio. |
-| `GUIA DE EJERCICIOS 16 - ARCHIVOS/` | 10 | `README_GUIA_16_ARCHIVOS.md` | **Manejo completo de Archivos en C**: modos `r`/`w`/`a`, estadísticas de texto, buscar y reemplazar, copiar/mayúsculas/invertir líneas, ordenamiento numérico con reporte, fusión AND/OR/XOR de ficheros, agenda CSV con borrado físico, inventario CRUD **binario** (`fwrite`/`fread`/`fseek`/`ftell`), reporte de notas en tabla y cifrado César. |
-| `GUIA DE EJERCICIOS 17 - PUNTEROS/` | 10 | `README_GUIA_17_PUNTEROS.md` | **Punteros y Memoria Dinámica en C**: fundamentos y paso por referencia (`&`, `*`), aritmética de punteros sin `[]`, implementación de cadenas con `char *`, selección + búsqueda binaria devolviendo `int *`, vector redimensionable (`malloc`/`realloc`), matrices dinámicas `int **`, callbacks/punteros a funciones, estructuras dinámicas (`->`), pila/cola con `Nodo **` y lista doblemente enlazada. |
-
-### Otras Carpetas
-
-| Carpeta | `.c` | Contenido |
-|---|---:|---|
-| `EJERCICIOS SIMPLES DE LA PRIMERA CLASE/` | 5 | Primeros 5 ejercicios básicos de entrada/salida: suma/resta/multiplicación (`long long`), sueldo mensual/quincenal/semanal, promedio de notas, costo de llamada y área/longitud de circunferencia. |
-| `EJERCICIOS_DE_CLASE/` | 5 | Prácticas realizadas en clase: `10 NUMEROS REALES.c`, `EJERCICIO DE PUNTEROS 1.c` y `2.c`, `LABORATORIO DE LENGUAJES.c` y `programa de vendedores.c`. |
-| `LENGUAJES/` | 1 | `LENGUAJES DE PROGRAMACION ARCHIVOS.c` junto con sus archivos de prueba (`a.txt`, `b.txt`, `c.txt`): operaciones **AND**, **OR** y **XOR** entre dos ficheros de enteros ordenados generando la salida ordenada de mayor a menor. |
-| `PARCIALES DE LABORATORIO RAMIREZ/` | 6 | Exámenes parciales originales conservados intactos (`PARCIAL N1/` y `PARCIAL N2/`) junto a `Ramirez Jose Parciales.pdf`. |
-
----
-
-## Compilación manual por consola
+- Al abrir la carpeta en VS Code se ejecuta `.vscode/auto_config.ps1`, que detecta dónde están **MSYS2**, **TDM-GCC** (o Dev-C++) y `gdb.exe`.
+- Si llevo el repo en un pendrive, puedo meter los compiladores en `tools/msys2` o `tools/tdm-gcc` (esa carpeta está en `.gitignore` para no subirla a GitHub).
+- Para correr cualquier `.c` en su propia carpeta, abro el archivo y le doy a **F5** (siempre abre en **consola externa**). En el selector de *Run & Debug* (`Ctrl+Shift+D`) se puede alternar entre:
+  - `Ejecutar (Auto - Consola Externa)`
+  - `Ejecutar con MSYS2 (Consola Externa)`
+  - `Ejecutar con TDM-GCC (Consola Externa)`
+- Si en alguna PC solo hay `gcc` sin `gdb`, también está la tarea `Ejecutar en Consola Externa (Sin GDB)`.
+- Si hace falta compilar a mano desde consola:
 
 ```bash
 gcc -Wall -Wextra -static-libgcc archivo.c -o archivo.exe -lm
 ```
+
+---
+
+## Plantillas de validación (`PLANTILLAS_VALIDACIONES/`)
+
+- **`PLANTILLA_VALIDACIONES.c`**: plantilla base que uso cuando necesito bloquear atajos de Windows (`Win+L`, `Ctrl+Alt+Supr`, `Alt+Tab`, `Alt+F4`, `Ctrl+C/V/X`, `F1-F24`, `Esc`, `QuickEdit`) en la misma consola, dejando activos los símbolos y `AltGr`, junto con lectura tecla por tecla (`_getch`) con límites por `#define` donde `-`, `.` y `,` no cuentan como dígito, validación de rangos y menús sin Enter. Sin `struct`.
+- **`VALIDACIONDETECLADOSIMPLE.c`**: versión ligera del bloqueo de teclado sin tocar el registro de Windows ni pedir administrador.
+
+---
+
+## Guías y carpetas
+
+| Carpeta | Ejercicios | PDF / referencia | Contenido |
+|---|---:|---|---|
+| `GUIA DE EJERCICIOS 01/` | 5 | `ejercicios 1.pdf` | Elecciones (Pedro, María y Juan), cuenta corriente BFC (dos versiones), clasificación de maratón y jornal diario. |
+| `GUIA DE EJERCICIOS 02/` | 10 | `ejercicios 2.pdf` | Área de triángulo, venta al mayor por docenas, IMC, salario con horas extras, días transcurridos en 2013, par/impar, ángulos, tipos de triángulo, notas (0–10) y año bisiesto. |
+| `GUIA DE EJERCICIOS 03/` | 12 | `ejercicios 3.pdf` | Variables, tipos de datos, operadores, cálculo de edad, interés simple/compuesto, triángulo rectángulo, perímetro, módulo, segundos a minutos, intercambio y cambio de divisas. |
+| `GUIA DE EJERCICIOS 04/` | 19 | `ejercicios de matrices.pdf` | 19 ejercicios de vectores y matrices (ajedrez, notas de 20 alumnos con archivo, cursos, primos, diagonales 20×20, pares/impares, vendedores 18×10, asientos de cine 25×4, conteo de letras). |
+| `GUIA DE EJERCICIOS 05/` | 9 | `ejercicios matriecs 2.pdf` | Operaciones con arreglos, ordenamiento, tablero de ajedrez, matriz 10×10, transpuesta 3×3, invertir cadena y contar vocales. |
+| `GUIA DE EJERCICIOS 06/` | 55 | `ejercicios que pedira en clases ... algunos.pdf` | Guía larga de clase: matrices (`34`–`57`), funciones con menús (`F1`–`F21`), recursividad (`R23`–`R26`) y estructuras (`E27`–`E34`). |
+| `GUIA DE EJERCICIOS 07/` | 12 | `ejecricios en c avanzados.pdf` | Ejercicios avanzados con punteros, recursividad y matrices dinámicas (RLE, rotación por anillos, árbol de decisiones, permutaciones, evaluador de expresiones, ecosistema, laberinto con backtracking, determinantes, mapa de calor y cifrado zigzag). |
+| `GUIA DE EJERCICIOS 08/` | 20 | `Ejercicios de Recursividad.pdf` | Factorial, Fibonacci, suma de dígitos, invertir cadena, palíndromos, búsqueda binaria, combinaciones binarias, Torres de Hanói, vocales, binario, MCD, primos, matriz, multiplicación sin `*` y potencia. |
+| `GUIA DE EJERCICIOS 09/` | 12 | `Ejercicios de Switch y funciones en lenguaje C.pdf` | Intervalos, divisores, ternas pitagóricas, serie de `e^x`, valor absoluto, promoción de películas, calificaciones, Collatz, Craps, menú de funciones, MCD recursivo y Ackermann. |
+| `GUIA DE EJERCICIOS 10/` | 5 | `Ejercicios de punteros con funciones y matrices (5).pdf` | Matrices dinámicas usando solo punteros y punteros a funciones (diagonales, búsqueda, caminos recursivos, callbacks y conteo de primos). |
+| `GUIA DE EJERCICIOS 11/` | 20 | `Ejercicios de Estructuras Secuenciales.pdf` | Fórmulas geométricas, sueldos, promedios, conversiones de texto y números, `ceil`/`floor`, llamadas, cm a pies/pulgadas, Celsius a Fahrenheit, recibo y mover carácter en consola. |
+| `GUIA DE EJERCICIOS 12/` | 20 | `Ejercicios Lenguaje C (No resueltos. Prog I).pdf` | Progresión I: operaciones básicas, ASCII, multiplicación vertical, fecha de Pascua, menús, ciclos con centinela, empleados, banco, elecciones, alumnos y matriz 4×4 transpuesta. |
+| `GUIA DE EJERCICIOS 13/` | 44 | `47 Ejercicio de Lenguaje C (No Resueltos).pdf`, `Ejercicios de Estructuras de Selección y de Repetición (Guia 1).pdf` | Condicionales, ciclos, series, primos, lluvias, empleados, alumnos, clubes, triángulos, año bisiesto, calculadora y fecha de Pascua. |
+| `GUIA DE EJERCICIOS 14/` | 8 | `Ejercicios Varios de Lenguaje C.pdf` | Arreglos, estructuras con punteros, archivos de texto, recursividad/ordenamiento, memoria dinámica, lista enlazada simple y árbol binario de búsqueda. |
+| `GUIA DE EJERCICIOS 15 - MATRICES/` | 20 | `Ejercicios de Matrices en Lenguaje C sin Resolver.pdf`, `rrays arreglos multidimensionales en C.pdf` | Versión ligera (sin bloqueo Win32) de los 19 ejercicios de matrices + ejercicio 20 de arreglo 3D (`6×10×2`). |
+| `GUIA DE EJERCICIOS 16 - ARCHIVOS/` | 10 | `README_GUIA_16_ARCHIVOS.md` | Archivos de texto y binarios: modos `r`/`w`/`a`, estadísticas, buscar/reemplazar, copiar/mayúsculas/invertir, ordenar números, AND/OR/XOR, agenda CSV, inventario binario CRUD (`fseek`), reporte de notas y cifrado César. |
+| `GUIA DE EJERCICIOS 17 - PUNTEROS/` | 10 | `README_GUIA_17_PUNTEROS.md` | Paso por referencia, aritmética de punteros sin `[]`, cadenas con `char *`, selección + búsqueda binaria devolviendo `int *`, vector con `malloc`/`realloc`, matriz `int **`, punteros a función, estructuras con `->`, pila/cola y lista doblemente enlazada. |
+| `EJERCICIOS SIMPLES DE LA PRIMERA CLASE/` | 5 | — | Primeros 5 ejercicios básicos (suma/resta/multiplicación, sueldos, promedio, llamada y circunferencia). |
+| `EJERCICIOS_DE_CLASE/` | 5 | — | Ejercicios sueltos de clase (`10 NUMEROS REALES`, `EJERCICIO DE PUNTEROS 1` y `2`, `LABORATORIO DE LENGUAJES` y `programa de vendedores`). |
+| `LENGUAJES/` | 1 | `a.txt`, `b.txt`, `c.txt` | Operaciones AND, OR y XOR entre ficheros de enteros ordenados. |
+| `PARCIALES DE LABORATORIO RAMIREZ/` | 6 | `Ramirez Jose Parciales.pdf` | Parciales originales de laboratorio (`PARCIAL N1` y `PARCIAL N2`), sin modificar. |
+| **Subtotal de ejercicios** | **308** | | |
+| `PLANTILLAS_VALIDACIONES/` | 2 | — | Plantilla maestra y versión simple de bloqueo de teclado. |
+| **Total de archivos `.c`** | **310** | | |
