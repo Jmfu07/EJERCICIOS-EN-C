@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <conio.h>
 
 int leerNatural(const char *mensaje, int min, int max) {
@@ -51,14 +52,20 @@ int leerNatural(const char *mensaje, int min, int max) {
     }
 }
 
-unsigned long long potencia(int a, int b) {
+unsigned long long potencia(int a, int b, int *overflow) {
+    unsigned long long sub;
     if (b == 0) {
         return 1ULL;
     }
     if (b == 1) {
         return (unsigned long long)a;
     }
-    return (unsigned long long)a * potencia(a, b - 1);
+    sub = potencia(a, b - 1, overflow);
+    if (*overflow || (a > 0 && sub > ULLONG_MAX / (unsigned long long)a)) {
+        *overflow = 1;
+        return 0ULL;
+    }
+    return (unsigned long long)a * sub;
 }
 
 char leerSiNo(void) {
@@ -88,7 +95,14 @@ int main(void) {
         a = leerNatural("Ingrese la base natural (a)", 1, 100);
         b = leerNatural("Ingrese el exponente natural (b)", 1, 18);
 
-        printf("\n-> Resultado recursivo: %d ^ %d = %llu\n", a, b, potencia(a, b));
+        {
+            int overflow = 0;
+            unsigned long long res = potencia(a, b, &overflow);
+            if (overflow)
+                printf("\n-> [Aviso] %d ^ %d supera el limite de unsigned long long (%.4e aprox).\n", a, b, 1.8446744e19);
+            else
+                printf("\n-> Resultado recursivo: %d ^ %d = %llu\n", a, b, res);
+        }
 
         printf("\nDesea calcular otra potencia? (S/N): ");
         repetir = leerSiNo();

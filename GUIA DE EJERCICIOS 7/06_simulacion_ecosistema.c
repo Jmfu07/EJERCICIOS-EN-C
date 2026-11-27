@@ -88,8 +88,8 @@ int contar_presas_vecinas(const int *mat, int filas, int cols, int f, int c) {
             if (df == 0 && dc == 0) continue;
             int nf = f + df, nc = c + dc;
             if (nf >= 0 && nf < filas && nc >= 0 && nc < cols) {
-                int tipo = *(mat + nf * cols + nc) & 0x03;
-                if (tipo == 1) conteo++;
+                int v = *(mat + nf * cols + nc);
+                if ((v & 0x03) == 1 && !((v >> 4) & 1)) conteo++;
             }
         }
     }

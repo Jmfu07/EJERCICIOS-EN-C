@@ -49,7 +49,7 @@ char **cargar_o_crear_laberinto(const char *nombre_archivo, int *filas, int *col
         if (!fp) return NULL;
     }
 
-    if (fscanf(fp, "%d %d", filas, cols) != 2 || *filas <= 0 || *cols <= 0) {
+    if (fscanf(fp, "%d %d", filas, cols) != 2 || *filas <= 0 || *cols <= 0 || *filas > 50 || *cols > 50) {
         fclose(fp);
         crear_laberinto_por_defecto(nombre_archivo);
         fp = fopen(nombre_archivo, "r");
@@ -60,9 +60,18 @@ char **cargar_o_crear_laberinto(const char *nombre_archivo, int *filas, int *col
     }
 
     char **lab = (char **)malloc((*filas) * sizeof(char *));
+    if (!lab) { fclose(fp); return NULL; }
     for (int i = 0; i < *filas; i++) {
+        char tmp[128];
         *(lab + i) = (char *)malloc((*cols + 2) * sizeof(char));
-        fscanf(fp, "%s", *(lab + i));
+        if (!*(lab + i) || fscanf(fp, "%127s", tmp) != 1 || (int)strlen(tmp) < *cols) {
+            for (int k = 0; k <= i; k++) free(*(lab + k));
+            free(lab);
+            fclose(fp);
+            return NULL;
+        }
+        memcpy(*(lab + i), tmp, (size_t)*cols);
+        *(*(lab + i) + *cols) = '\0';
     }
     fclose(fp);
     return lab;
@@ -187,7 +196,7 @@ int main(void) {
     }
 
     printf("--- LABERINTO CARGADO DESDE '%s' (%dx%d) ---\n", archivo, filas, cols);
-    int f_ini = 0, c_ini = 0;
+    int f_ini = -1, c_ini = -1;
     for (int i = 0; i < filas; i++) {
         printf("  ");
         for (int j = 0; j < cols; j++) {
@@ -199,6 +208,13 @@ int main(void) {
             }
         }
         printf("\n");
+    }
+    if (f_ini < 0) {
+        printf("Error: el laberinto no contiene celda de entrada 'E'.\n");
+        for (int i = 0; i < filas; i++) free(*(lab + i));
+        free(lab);
+        system("pause");
+        return 1;
     }
 
     int **vis = (int **)malloc(filas * sizeof(int *));

@@ -76,11 +76,13 @@ int tokenizar_expresion(const char *expr, double (*tokens)[3], int max_tokens) {
             continue;
         }
         if (*(expr + i) == '(') {
+            if (!esperando_numero) return -1;
             bono_parentesis += 10;
             i++;
             continue;
         }
         if (*(expr + i) == ')') {
+            if (esperando_numero) return -1;
             bono_parentesis -= 10;
             if (bono_parentesis < 0) return -1;
             i++;
@@ -130,7 +132,8 @@ double evaluar_tokens_rec(double (*tokens)[3], int n, int paso, int *error) {
     for (int i = 0; i < n; i++) {
         int tipo = (int)(*(*(tokens + i) + 0));
         int prio = (int)(*(*(tokens + i) + 2));
-        if (tipo == 1 && prio > max_prio) {
+        char op_i = (char)((int)(*(*(tokens + i) + 1)));
+        if (tipo == 1 && (prio > max_prio || (prio == max_prio && op_i == '^'))) {
             max_prio = prio;
             idx_max = i;
         }
@@ -186,6 +189,11 @@ int main(void) {
 
     char expr[256];
     double (*tokens)[3] = malloc(128 * sizeof(*tokens));
+    if (!tokens) {
+        printf("Error de memoria.\n");
+        system("pause");
+        return 1;
+    }
     int num_tokens = -1;
 
     while (num_tokens < 0) {
