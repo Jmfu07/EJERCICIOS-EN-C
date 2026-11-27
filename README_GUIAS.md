@@ -1,36 +1,37 @@
-﻿# Repositorio de Ejercicios y Guias Resueltas en C
+﻿# Repositorio de Ejercicios y Guías Resueltas en C
 
 Cada ejercicio está separado en su propio archivo `.c` junto con su ejecutable `.exe`, compatible con **Dev-C++ (TDM-GCC)** y **Visual Studio / VS Code (MSYS2/MinGW)**.
 
-## Plantillas Maestras de Validación y Bloqueo de Teclado
-- `VALIDACIONESPORTECLADO.c`: Plantilla maestra unificada que combina el bloqueo de atajos de Windows (`Win+L`, `Ctrl+Alt+Supr`, `Alt+Tab`, `Alt+F4`, `Ctrl+C/V/X`, `F1-F24`, `Esc`, `QuickEdit`) sin falsos positivos de antivirus + validaciones tecla por tecla (`_getch`) + validaciones por línea con rango (`fgets`) + menús instantáneos.
-- `VALIDACIONES DE TIPO DE DATO.c`: Menú interactivo de pruebas de validación tecla por tecla (`_getch`) para enteros (positivos, negativos, con signo), decimales, letras, operaciones y vectores.
-- `VALIDACIONES DE HOY.c`: Calculadora validada con bloqueo de teclado.
-- `VALIDACIONDETECLADOSIMPLE.c`: Versión ligera del hook de teclado en modo usuario.
+## Plantillas de Validación y Bloqueo de Teclado (`PLANTILLAS_VALIDACIONES/`)
+- `PLANTILLAS_VALIDACIONES/PLANTILLA_VALIDACIONES.c`: Plantilla maestra unificada (sin `struct`) que combina el bloqueo de atajos de Windows (`Win+L`, `Ctrl+Alt+Supr`, `Alt+Tab`, `Alt+F4`, `Ctrl+C/V/X`, `F1-F24`, `Esc`, `QuickEdit`) en una sola consola, permitiendo símbolos y `AltGr`, junto con las validaciones tecla por tecla (`_getch`) con límites por `#define` y menús instantáneos.
+- `PLANTILLAS_VALIDACIONES/VALIDACIONDETECLADOSIMPLE.c`: Versión ligera del bloqueo de teclado en modo usuario (sin tocar registro ni pedir administrador).
 
 ---
 
-## Estructura de Carpetas y Guías Resueltas
+## Estructura de Carpetas y Guías
 
-| Carpeta | Contenido / Guía correspondiente | Archivos `.c` |
-|---|---|---|
-| `EJERCICIOS SIMPLES DE LA PRIMERA CLASE/` | 5 ejercicios básicos de entrada/salida y cálculos | 5 |
-| `GUIA DE EJERCICIOS 1/` | `1eraGuia.pdf` (Elecciones, Cuenta corriente BFC, Maratón, Jornal diario) | 5 |
-| `GUIA DE EJERCICIOS 2/` | `2daGuia.pdf` / `Ejercicios en Lenguaje C (No Resueltos).pdf` (N1 a N10) | 10 |
-| `GUIA DE EJERCICIOS 3/` | `Ejercicios. Elementos Básicos del Lenguaje C.pdf` (N1 a N12) | 12 |
-| `GUIA DE EJERCICIOS 4/` | `Ejercicios de Matrices en Lenguaje C sin Resolver.pdf` (N1 a N19 con validaciones completas) | 19 |
-| `GUIA DE EJERCICIOS 5/` | `Ejercicios de Matrices.pdf` (`ejercicios matriecs 2.pdf` - 9 ejercicios) | 9 |
-| `GUIA DE EJERCICIOS 6/` | `Ejercicios para Elaborar en clase.pdf` (Matrices 34-57, Funciones 1-21, Recursividad 23-26, Estructuras 27-34) | 55 |
-| `GUIA DE EJERCICIOS 7/` | `ejecricios en c avanzados.pdf` (12 requerimientos avanzados de examen con recursividad, matrices dinámicas y punteros) | 12 |
-| `Guia_Matrices/` | 19 ejercicios de la guía de matrices y vectores (`01` a `19`) | 19 |
-| `Guia_Recursividad/` | `Ejercicios de Recursividad.pdf` (`01` a `20`) | 20 |
-| `Guia_Switch_Funciones/` | `Ejercicios de Switch y funciones en lenguaje C.pdf` (`01` a `12`) | 12 |
-| `Guia_Punteros_Funciones_Matrices/` | `Ejercicios de punteros con funciones y matrices (5).pdf` (`01` a `05`) | 5 |
-| `Guia_Estructuras_Secuenciales/` | `Ejercicios de Estructuras Secuenciales.pdf` (`01` a `20`) | 20 |
-| `Guia_Progresion_I/` | `Ejercicios Lenguaje C (No resueltos. Prog I).pdf` (`01` a `21`) | 20 |
-| `Guia_47_Ejercicios_Seleccion_Repeticion/` | `47 Ejercicio de Lenguaje C.pdf` y `Guia 1 Selección y Repetición` (`01` a `47`) | 44 |
-| `Guia_Varios/` | `Ejercicios Varios de Lenguaje C.pdf` (Arreglos, Estructuras, Archivos, Recursividad, Punteros, Listas enlazadas, Árboles binarios) | 8 |
-| `PARCIALES DE LABORATORIO RAMIREZ/` | Parcial N1 (`PARCIAL N1.1.c` y `PARCIAL N1.2.c`) y parciales en raíz (`PARCIAL N2 EJERCICIO N1/N2`, `LABORATORIO N1/N2`) | 6+ |
+| Carpeta | Contenido / Guía correspondiente | Archivos `.c` | PDF en carpeta |
+|---|---|---:|---|
+| `PLANTILLAS_VALIDACIONES/` | Plantilla maestra y bloqueo simple de teclado | 2 | — |
+| `EJERCICIOS SIMPLES DE LA PRIMERA CLASE/` | 5 ejercicios básicos de entrada/salida y cálculos | 5 | — |
+| `EJERCICIOS_DE_CLASE/` | Ejercicios sueltos de clase, punteros y vendedores | 5 | — |
+| `LENGUAJES/` | Operaciones AND/OR/XOR de archivos (`a.txt`, `b.txt`, `c.txt`) | 1 | — |
+| `PARCIALES DE LABORATORIO RAMIREZ/` | `PARCIAL N1/` (2 ejercicios) y `PARCIAL N2/` (4 ejercicios) | 6 | — |
+| `GUIA DE EJERCICIOS 1/` | Elecciones, Cuenta corriente BFC, Maratón, Jornal diario | 5 | `ejercicios 1.pdf` |
+| `GUIA DE EJERCICIOS 2/` | Ejercicios N1 a N10 (selección y cálculos) | 10 | `ejercicios 2.pdf` |
+| `GUIA DE EJERCICIOS 3/` | Elementos Básicos del Lenguaje C (N1 a N12) | 12 | `ejercicios 3.pdf` |
+| `GUIA DE EJERCICIOS 4/` | Ejercicios de Matrices (N1 a N19) | 19 | `ejercicios de matrices.pdf` |
+| `GUIA DE EJERCICIOS 5/` | Ejercicios de Matrices 2 (9 ejercicios) | 9 | `ejercicios matriecs 2.pdf` |
+| `GUIA DE EJERCICIOS 6/` | Ejercicios para elaborar en clase (Matrices, Funciones, Recursividad, Estructuras) | 55 | `ejercicios que pedira en clases ... algunos.pdf` |
+| `GUIA DE EJERCICIOS 7/` | Ejercicios avanzados en C (12 ejercicios) | 12 | `ejecricios en c avanzados.pdf` |
+| `Guia_Matrices/` | 19 ejercicios de matrices y vectores (`01` a `19`) | 19 | — |
+| `Guia_Recursividad/` | Ejercicios de Recursividad (`01` a `20`) | 20 | — |
+| `Guia_Switch_Funciones/` | Ejercicios de Switch y funciones (`01` a `12`) | 12 | — |
+| `Guia_Punteros_Funciones_Matrices/` | Punteros con funciones y matrices (`01` a `05`) | 5 | — |
+| `Guia_Estructuras_Secuenciales/` | Estructuras Secuenciales (`01` a `20`) | 20 | — |
+| `Guia_Progresion_I/` | Programación I (`01` a `21`) | 20 | — |
+| `Guia_47_Ejercicios_Seleccion_Repeticion/` | Selección y Repetición (`01` a `47`) | 44 | — |
+| `Guia_Varios/` | Arreglos, Estructuras, Archivos, Punteros, Listas y Árboles | 8 | — |
 
 ---
 

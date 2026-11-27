@@ -1,0 +1,7 @@
+# Compiladores portables opcionales (ej. en USB, sin subir cientos de MB a GitHub)
+tools/
+
+# Archivos temporales de compilacion
+*.o
+*.obj
+*.out

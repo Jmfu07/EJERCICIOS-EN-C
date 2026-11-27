@@ -3,13 +3,32 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "Compilar con MSYS2",
-            "command": "C:\\LENGUAJES\\MSYS2\\ucrt64\\bin\\gcc.exe",
+            "label": "Auto-configurar Entorno",
+            "command": "powershell",
             "args": [
-                "-fdiagnostics-color=always",
-                "-g",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}\\.vscode\\auto_config.ps1"
+            ],
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "close": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Compilar (Auto)",
+            "command": "${workspaceFolder}\\.vscode\\compilar.cmd",
+            "args": [
+                "auto",
                 "${file}",
-                "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
@@ -22,6 +41,55 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "type": "shell",
+            "label": "Compilar con MSYS2",
+            "command": "${workspaceFolder}\\.vscode\\compilar.cmd",
+            "args": [
+                "msys2",
+                "${file}",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Compilar con TDM-GCC",
+            "command": "${workspaceFolder}\\.vscode\\compilar.cmd",
+            "args": [
+                "tdm",
+                "${file}",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        },
+        {
+            "type": "shell",
+            "label": "Ejecutar en Consola Externa (Sin GDB)",
+            "dependsOn": "Compilar (Auto)",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "start",
+                "\"${fileBasenameNoExtension}\"",
+                "/D",
+                "${fileDirname}",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "problemMatcher": []
         }
     ]
 }
